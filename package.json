@@ -1,0 +1,12 @@
+{
+  "name": "ironai",
+  "version": "1.0.0",
+  "private": true,
+  "description": "IronAI — AI-powered workout & diet coach. Full-stack fitness app.",
+  "scripts": {
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm run dev",
+    "build:client": "cd client && npm run build",
+    "vercel-build": "cd client && npm install && npm run build"
+  }
+}

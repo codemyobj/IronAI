@@ -1,24 +1,51 @@
 // ============================================================
-// MySQL connection pool — manages database connections efficiently
+// MySQL database connection
 //
-// A POOL is better than a single connection because:
-// 1. Multiple queries can run in parallel (up to connectionLimit)
-// 2. Connections are reused (no overhead of creating/destroying)
-// 3. Connections are automatically released back to the pool
+// Local dev: uses individual DB_HOST, DB_USER, etc. from .env
+// Production (Vercel): uses DATABASE_URL (PlanetScale / Aiven format)
+//
+// In serverless, connection pooling is less effective (each
+// invocation may be a cold start). We keep a small pool (max 5)
+// to handle concurrent requests within the same warm instance.
 // ============================================================
 
 import mysql from 'mysql2/promise'
 import dotenv from 'dotenv'
 dotenv.config()
 
+// Parse connection from DATABASE_URL (standard for cloud DBs like PlanetScale)
+// Format: mysql://user:password@host:port/database
+function parseDatabaseUrl(url: string): mysql.PoolOptions {
+  const parsed = new URL(url)
+  return {
+    host: parsed.hostname,
+    port: Number(parsed.port) || 3306,
+    user: parsed.username,
+    password: parsed.password,
+    database: parsed.pathname.replace('/', ''),
+    ssl: {
+      // PlanetScale and most cloud DBs use valid public CA certs
+      rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED !== 'false',
+    },
+  }
+}
+
+const baseConfig: mysql.PoolOptions = process.env.DATABASE_URL
+  ? parseDatabaseUrl(process.env.DATABASE_URL)
+  : {
+      host: process.env.DB_HOST || 'localhost',
+      user: process.env.DB_USER || 'ironai_user',
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME || 'ironai',
+    }
+
 const pool = mysql.createPool({
-  host: process.env.DB_HOST || 'localhost',
-  user: process.env.DB_USER || 'ironai_user',
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME || 'ironai',
+  ...baseConfig,
   waitForConnections: true,
-  connectionLimit: 10,    // Max simultaneous connections
-  queueLimit: 0,          // Unlimited queue — requests wait instead of failing
+  connectionLimit: process.env.DATABASE_URL ? 5 : 10, // Smaller pool for serverless
+  queueLimit: 0,
+  enableKeepAlive: true,
+  keepAliveInitialDelay: 10000,
 })
 
 export default pool
