@@ -24,8 +24,9 @@ function parseDatabaseUrl(url: string): mysql.PoolOptions {
     password: parsed.password,
     database: parsed.pathname.replace('/', ''),
     ssl: {
-      // PlanetScale and most cloud DBs use valid public CA certs
-      rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED !== 'false',
+      // Free cloud DBs (PolarDB-X, etc.) often use self-signed certs.
+      // Default to false for DATABASE_URL; set to 'true' if your provider uses valid CA certs.
+      rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED === 'true',
     },
   }
 }
