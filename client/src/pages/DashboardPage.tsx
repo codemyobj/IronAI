@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import apiClient from '../api';
 import { useAuth } from '../hooks/useAuth';
+import apiClient from '../api';
 
 interface DashboardStats {
   programCount: number;
