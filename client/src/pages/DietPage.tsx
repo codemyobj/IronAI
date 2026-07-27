@@ -87,10 +87,10 @@ export default function DietPage() {
   // Calculate today's totals from records
   const todayTotals = records.reduce(
     (acc, r) => ({
-      calories: acc.calories + (r.calories || 0),
-      protein: acc.protein + (r.protein_grams || 0),
-      carbs: acc.carbs + (r.carbs_grams || 0),
-      fat: acc.fat + (r.fat_grams || 0),
+      calories: acc.calories + Number(r.calories || 0),
+      protein: acc.protein + Number(r.protein_grams || 0),
+      carbs: acc.carbs + Number(r.carbs_grams || 0),
+      fat: acc.fat + Number(r.fat_grams || 0),
     }),
     { calories: 0, protein: 0, carbs: 0, fat: 0 }
   );
@@ -140,15 +140,15 @@ export default function DietPage() {
           <span className="macro-label">Calories</span>
         </div>
         <div className="macro-item">
-          <span className="macro-value">{todayTotals.protein.toFixed(1)}g</span>
+          <span className="macro-value">{Number(todayTotals.protein).toFixed(1)}g</span>
           <span className="macro-label">Protein</span>
         </div>
         <div className="macro-item">
-          <span className="macro-value">{todayTotals.carbs.toFixed(1)}g</span>
+          <span className="macro-value">{Number(todayTotals.carbs).toFixed(1)}g</span>
           <span className="macro-label">Carbs</span>
         </div>
         <div className="macro-item">
-          <span className="macro-value">{todayTotals.fat.toFixed(1)}g</span>
+          <span className="macro-value">{Number(todayTotals.fat).toFixed(1)}g</span>
           <span className="macro-label">Fat</span>
         </div>
       </div>
@@ -176,10 +176,10 @@ export default function DietPage() {
                           <span className="text-muted">{record.portion_description}</span>
                         )}
                         <div className="meal-macros">
-                          {record.calories && <span>{record.calories} kcal</span>}
-                          {record.protein_grams && <span>P: {record.protein_grams}g</span>}
-                          {record.carbs_grams && <span>C: {record.carbs_grams}g</span>}
-                          {record.fat_grams && <span>F: {record.fat_grams}g</span>}
+                          {record.calories && <span>{Number(record.calories)} kcal</span>}
+                          {record.protein_grams && <span>P: {Number(record.protein_grams)}g</span>}
+                          {record.carbs_grams && <span>C: {Number(record.carbs_grams)}g</span>}
+                          {record.fat_grams && <span>F: {Number(record.fat_grams)}g</span>}
                         </div>
                       </div>
                       <button
@@ -207,17 +207,17 @@ export default function DietPage() {
                 <div className="weekly-date">
                   {new Date(day.recorded_at + 'T00:00:00').toLocaleDateString(undefined, { weekday: 'short' })}
                 </div>
-                <div className="weekly-calories">{day.daily_calories}</div>
+                <div className="weekly-calories">{Number(day.daily_calories)}</div>
                 <div className="weekly-macros">
-                  P:{day.daily_protein}g C:{day.daily_carbs}g F:{day.daily_fat}g
+                  P:{Number(day.daily_protein)}g C:{Number(day.daily_carbs)}g F:{Number(day.daily_fat)}g
                 </div>
               </div>
             ))}
           </div>
           {summary && (
             <div className="weekly-totals">
-              <span>Weekly avg: {(summary.total_calories / dailyBreakdown.filter(d => d.entries > 0).length || 1).toFixed(0)} kcal/day</span>
-              <span>Total protein: {summary.total_protein.toFixed(0)}g</span>
+              <span>Weekly avg: {(Number(summary.total_calories) / dailyBreakdown.filter(d => d.entries > 0).length || 1).toFixed(0)} kcal/day</span>
+              <span>Total protein: {Number(summary.total_protein).toFixed(0)}g</span>
             </div>
           )}
         </div>

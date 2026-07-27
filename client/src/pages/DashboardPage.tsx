@@ -34,7 +34,7 @@ export default function DashboardPage() {
         ]);
 
         const todayCalories = dietRes.data.records.reduce(
-          (sum: number, r: any) => sum + (r.calories || 0),
+          (sum: number, r: any) => sum + Number(r.calories || 0),
           0
         );
 

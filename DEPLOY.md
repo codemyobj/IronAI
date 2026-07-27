@@ -7,12 +7,12 @@
 ## 📐 架构
 
 ```
-浏览器 → https://ironai-tan.vercel.app
+浏览器 → https://iron-ai-one.vercel.app
     ├── /                  → React SPA（Vite 构建，Vercel 静态托管）
     ├── /login, /dashboard → React Router 客户端路由
     └── /api/*             → Vercel Serverless Function（Express API）
                                 ↓
-                           PolarDB-X Zero（阿里云免费 MySQL，100% 兼容）
+                           Supabase PostgreSQL（海外免费数据库）
 ```
 
 ---
@@ -36,7 +36,7 @@ IronAI/
 │   └── src/
 │       ├── app.ts              # Express 应用（不 listen，供 Vercel 和本地共用）
 │       ├── index.ts            # 本地开发入口（app.listen）
-│       ├── config/db.ts        # MySQL 连接（支持 DATABASE_URL + SSL）
+│       ├── config/db.ts        # PostgreSQL 连接（pg.Pool，支持 DATABASE_URL + SSL）
 │       ├── middleware/auth.ts   # JWT 认证中间件
 │       ├── controllers/        # 业务逻辑
 │       ├── routes/             # RESTful 路由
@@ -44,7 +44,7 @@ IronAI/
 │       └── types/index.ts      # 服务端类型
 │
 ├── api/index.ts                # Vercel Serverless Function 入口
-├── database/schema.sql         # 数据库建表 SQL
+├── database/schema.sql         # 数据库建表 SQL（PostgreSQL 语法）
 ├── vercel.json                 # Vercel 部署配置
 ├── .env.example                # 环境变量模板
 ├── DEPLOY.md                   # 本文档
@@ -96,55 +96,53 @@ git push -u origin master
 
 ---
 
-## 🗄️ 第二部分：免费 MySQL 数据库
+## 🗄️ 第二部分：Supabase PostgreSQL 数据库
 
-### 方案：PolarDB-X Zero（阿里云）
+### 方案：Supabase（海外免费 PostgreSQL）
 
 | 特性 | 说明 |
 |------|------|
-| 费用 | **完全免费** |
-| 注册 | **无需注册** |
+| 费用 | **完全免费**（500MB 数据库，5GB 带宽/月） |
+| 注册 | **需要 GitHub 账号** |
 | 信用卡 | **不需要** |
-| 兼容性 | **100% MySQL 8.0** |
-| 配置 | 2核 4GB |
-| 有效期 | 最长 30 天（可续） |
+| 数据库 | **PostgreSQL 15** |
+| 连接池 | 支持连接池模式（pooler） |
+| 有效期 | 免费套餐，长期可用 |
 
-### 2.1 创建数据库
+### 2.1 创建 Supabase 项目
 
-1. 打开 [zero.polardbx.com](https://zero.polardbx.com)
-2. 点击 **"创建实例"**，选择 MySQL 8.0
-3. 记录连接信息：
-   - 主机地址（Host）
-   - 端口（Port）
-   - 用户名（Username）
-   - 密码（Password）
+1. 打开 [supabase.com](https://supabase.com)，用 GitHub 账号登录
+2. 点击 **"New Project"**
+3. 输入项目名称（如 `ironai`），设置数据库密码
+4. 选择区域（建议 `US East` 或 `Singapore` 以获得更好的 Vercel 兼容性）
+5. 点击 **"Create new project"**，等待初始化完成（约 1-2 分钟）
 
-### 2.2 运行建表 SQL
+### 2.2 获取数据库连接信息
 
-使用 MySQL 客户端连接并执行：
+项目创建完成后：
 
+1. 进入项目 → **Settings** → **Database**
+2. 在 **Connection string** 区域，点击 **"Copy"** 复制连接字符串
+3. 格式如下：
+   ```
+   postgresql://postgres.你的项目ID:你的密码@aws-0-us-east-1.pooler.supabase.com:6543/postgres
+   ```
+
+> ⚠️ **推荐使用连接池模式（pooler）**，端口为 `6543`，而不是直连模式的 `5432`。连接池模式更适合 Serverless 环境。
+
+### 2.3 运行建表 SQL
+
+1. 进入项目 → **SQL Editor**
+2. 点击 **"New query"**
+3. 将 [database/schema.sql](database/schema.sql) 中的内容粘贴进去
+4. 点击 **"Run"** 执行建表语句
+
+也可以通过本地客户端连接：
 ```bash
-mysql -h <主机地址> -P <端口> -u <用户名> -p'<密码>'
+psql "postgresql://postgres.你的项目ID:你的密码@aws-0-us-east-1.pooler.supabase.com:6543/postgres"
 ```
 
-然后执行 [database/schema.sql](database/schema.sql) 中的建表语句。
-
-也可以通过代码连接（示例）：
-```js
-const mysql = require('mysql2/promise');
-const conn = await mysql.createConnection({
-  host: '<主机地址>',
-  port: <端口>,
-  user: '<用户名>',
-  password: '<密码>',
-  ssl: { rejectUnauthorized: false }
-});
-await conn.execute('CREATE DATABASE IF NOT EXISTS ironai CHARACTER SET utf8mb4');
-await conn.execute('USE ironai');
-// 执行 schema.sql 中的 CREATE TABLE 语句...
-```
-
-### 2.3 数据库表结构
+### 2.4 数据库表结构
 
 | 表名 | 用途 |
 |------|------|
@@ -163,11 +161,13 @@ await conn.execute('USE ironai');
 
 | Key | 说明 | 示例值 |
 |-----|------|--------|
-| `DATABASE_URL` | MySQL 连接字符串 | `mysql://user:pass@host:3306/ironai` |
+| `DATABASE_URL` | PostgreSQL 连接字符串（使用连接池模式） | `postgresql://postgres.xxx:password@aws-0-us-east-1.pooler.supabase.com:6543/postgres` |
 | `JWT_SECRET` | JWT 签名密钥（64位随机hex） | 用 `node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"` 生成 |
 | `DEEPSEEK_API_KEY` | DeepSeek API 密钥 | `sk-xxxxx` |
 
-> ⚠️ `DATABASE_URL` 的密码中如有特殊字符，需要 URL 编码（`@` → `%40`, `#` → `%23` 等）
+> ⚠️ 
+> - `DATABASE_URL` 的密码中如有特殊字符，需要 URL 编码（`@` → `%40`, `#` → `%23` 等）
+> - 生产环境已在 `db.ts` 中配置 `ssl: { rejectUnauthorized: false }`，以兼容 Supabase 的自签名证书
 
 添加完成后，去 **Deployments** → 点击最新部署右边的 `...` → **Redeploy** 使变量生效。
 
@@ -178,40 +178,42 @@ await conn.execute('USE ironai');
 ### 4.1 环境准备
 
 - Node.js 18+
-- MySQL 8.0
+- PostgreSQL 15+（本地安装或使用 Supabase 远程数据库）
 - Git
 
-### 4.2 创建本地数据库
+### 4.2 配置环境变量
 
+复制 `.env.example` 为 `server/.env`：
 ```bash
-mysql -u root -p < database/schema.sql
-```
-
-### 4.3 配置环境变量
-
-复制 `server/.env.example` 为 `server/.env`：
-```bash
-cp server/.env.example server/.env
+cp .env.example server/.env
 ```
 
 编辑 `server/.env`：
 ```env
-PORT=3000
+PORT=8080
+
 DB_HOST=localhost
-DB_USER=root
-DB_PASSWORD=你的本地MySQL密码
+DB_PORT=5432
+DB_USER=ironai_user
+DB_PASSWORD=你的本地数据库密码
 DB_NAME=ironai
+
+# 或者直接使用 Supabase 远程数据库（推荐开发阶段使用）
+# DATABASE_URL=postgresql://postgres.xxx:password@aws-0-us-east-1.pooler.supabase.com:6543/postgres
+
 JWT_SECRET=生成一个随机字符串
 DEEPSEEK_API_KEY=你的DeepSeek密钥
 ```
 
-### 4.4 启动项目
+> 💡 **快捷方式**：开发阶段可以直接使用 Supabase 远程数据库，无需本地安装 PostgreSQL。只需设置 `DATABASE_URL` 即可。
+
+### 4.3 启动项目
 
 ```bash
 # 终端 1：启动后端
 cd server
 npm install
-npm run dev        # http://localhost:3000
+npm run dev        # http://localhost:8080
 
 # 终端 2：启动前端
 cd client
@@ -219,7 +221,7 @@ npm install
 npm run dev        # http://localhost:5173
 ```
 
-前端通过 Vite proxy 将 `/api` 请求转发到 `localhost:3000`，无需处理 CORS。
+前端通过 Vite proxy 将 `/api` 请求转发到 `localhost:8080`，无需处理 CORS。
 
 ---
 
@@ -272,7 +274,7 @@ npm run dev        # http://localhost:5173
 | 服务 | 免费额度 | 限制 |
 |------|---------|------|
 | **Vercel** | 100GB-小时/月 函数执行，100GB 带宽 | 函数最长 10s（本项目设 30s） |
-| **PolarDB-X Zero** | 2核 4GB MySQL | 最长 30 天，需续期 |
+| **Supabase** | 500MB 数据库，5GB 带宽/月 | 社区支持，无 SLA |
 | **DeepSeek API** | 注册赠送额度 | 按 token 计费 |
 
 > 所有服务在免费额度内使用，**不需要绑定信用卡**。
@@ -284,10 +286,15 @@ npm run dev        # http://localhost:5173
 ### Q: 部署后访问 API 返回 500 错误？
 检查 Vercel 环境变量是否正确设置，特别是 `DATABASE_URL`。
 
-### Q: 数据库连接失败？
-- 确认 PolarDB-X 实例未过期（最多 30 天）
-- 确认 `DATABASE_URL` 格式正确：`mysql://user:password@host:port/database`
-- PolarDB-X 需要 SSL 连接，配置中已默认开启
+### Q: 数据库连接失败（self-signed certificate 错误）？
+Supabase 使用自签名 SSL 证书。生产环境已在 `db.ts` 中配置 `ssl: { rejectUnauthorized: false }`。如果你在本地开发遇到此问题，可以：
+- 本地开发设置 `NODE_ENV=development` 跳过 SSL 验证
+- 或在连接字符串中添加 `?sslmode=require`
+
+### Q: 数据库连接被拒绝（Access denied）？
+- 确认 Supabase 项目未暂停（免费项目 7 天不活动会暂停，访问一次即可恢复）
+- 确认 `DATABASE_URL` 中的用户名和密码正确
+- 确认使用的是连接池地址（`pooler.supabase.com`）和端口 `6543`
 
 ### Q: AI 分析不可用？
 - 确认 `DEEPSEEK_API_KEY` 已设置
@@ -306,7 +313,7 @@ npx vercel --prod
 ```bash
 cd client && npm run build    # 构建前端
 cd ../server && npm run dev   # 启动后端
-# 然后访问 http://localhost:3000（后端直接托管前端静态文件）
+# 然后访问 http://localhost:8080（后端直接托管前端静态文件）
 ```
 
 ---
@@ -316,4 +323,5 @@ cd ../server && npm run dev   # 启动后端
 - [PROJECT_PLAN.md](PROJECT_PLAN.md) — 完整学习计划和项目说明
 - [vercel.json](vercel.json) — Vercel 部署配置
 - [.env.example](.env.example) — 环境变量模板
-- [database/schema.sql](database/schema.sql) — 数据库建表 SQL
+- [database/schema.sql](database/schema.sql) — 数据库建表 SQL（PostgreSQL）
+- [server/src/config/db.ts](server/src/config/db.ts) — 数据库连接配置（pg.Pool）
