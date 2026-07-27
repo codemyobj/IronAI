@@ -25,11 +25,12 @@ function parseDatabaseUrl(url: string): mysql.PoolOptions {
     password: decodeURIComponent(parsed.password),
     database: parsed.pathname.replace('/', ''),
     ssl: {
-      // PolarDB-X requires SSL for public connections
-      // Self-signed certs → false (accept), Valid CA certs → true
-      rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED !== 'false',
+      // PolarDB-X uses self-signed certs by default
+      // Set DB_SSL_REJECT_UNAUTHORIZED=true if using valid CA certs
+      rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED === 'true',
     },
     timezone: '+08:00',
+    connectTimeout: 10000,
   }
 }
 
