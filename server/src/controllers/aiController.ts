@@ -1,63 +1,44 @@
-// ============================================================
-// AI Controller — training analysis & diet recommendations
-//
-// Flow:
-// 1. Fetch user profile + relevant data from MySQL
-// 2. Build a detailed prompt with that data
-// 3. Send to DeepSeek API
-// 4. Save the response to the ai_analyses table
-// 5. Return the response to the client
-// ============================================================
-
 import { Response } from 'express'
 import pool from '../config/db'
 import { AuthRequest } from '../middleware/auth'
 import { chatCompletion, TRAINING_SYSTEM_PROMPT, DIET_SYSTEM_PROMPT } from '../services/deepseek'
-import { RowDataPacket, ResultSetHeader } from 'mysql2'
 
-// ============================================================
-// POST /api/ai/training-analysis
-// ============================================================
 export const trainingAnalysis = async (req: AuthRequest, res: Response) => {
   try {
-    // 1. Fetch user profile
-    const [userRows] = await pool.query<RowDataPacket[]>(
+    const userResult = await pool.query(
       `SELECT name, age, weight_kg, height_cm, fitness_goal
-       FROM users WHERE id = ?`,
+       FROM users WHERE id = $1`,
       [req.userId!]
     )
 
-    if (userRows.length === 0) {
+    if (userResult.rows.length === 0) {
       res.status(404).json({ error: 'User not found' })
       return
     }
 
-    const user = userRows[0]
+    const user = userResult.rows[0]
 
-    // 2. Fetch recent training sessions (last 30 days)
-    const [sessionRows] = await pool.query<RowDataPacket[]>(
+    const sessionResult = await pool.query(
       `SELECT ts.started_at, ts.duration_minutes, ts.perceived_effort, ts.notes,
               tp.name as program_name
        FROM training_sessions ts
        LEFT JOIN training_programs tp ON ts.program_id = tp.id
-       WHERE ts.user_id = ?
-         AND ts.started_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+       WHERE ts.user_id = $1
+         AND ts.started_at >= NOW() - INTERVAL '30 days'
        ORDER BY ts.started_at DESC
        LIMIT 30`,
       [req.userId!]
     )
 
-    // 3. Fetch active training programs with exercise counts
-    const [programRows] = await pool.query<RowDataPacket[]>(
+    const programResult = await pool.query(
       `SELECT tp.name, tp.difficulty, tp.target_muscle_group, COUNT(e.id) as exercise_count
        FROM training_programs tp
        LEFT JOIN exercises e ON tp.id = e.program_id
-       WHERE tp.user_id = ? AND tp.is_active = TRUE
+       WHERE tp.user_id = $1 AND tp.is_active = TRUE
        GROUP BY tp.id`,
       [req.userId!]
     )
 
-    // 4. Build the user prompt
     const userPrompt = `
 ## User Profile
 - Name: ${user.name}
@@ -67,15 +48,15 @@ export const trainingAnalysis = async (req: AuthRequest, res: Response) => {
 - Goal: ${user.fitness_goal ?? 'general'}
 
 ## Active Training Programs
-${programRows.length > 0
-        ? programRows.map((p: any) =>
+${programResult.rows.length > 0
+        ? programResult.rows.map((p: any) =>
           `- **${p.name}** — ${p.difficulty}, target: ${p.target_muscle_group ?? 'full body'}, ${p.exercise_count} exercises`
         ).join('\n')
         : '- No active programs'}
 
 ## Recent Training Sessions (last 30 days)
-${sessionRows.length > 0
-        ? sessionRows.map((s: any) =>
+${sessionResult.rows.length > 0
+        ? sessionResult.rows.map((s: any) =>
           `- ${new Date(s.started_at).toLocaleDateString()}: ${s.program_name ?? 'Freestyle workout'}, ${s.duration_minutes ?? '?'} min, effort ${s.perceived_effort ?? '?'}/10${s.notes ? ` — ${s.notes}` : ''}`
         ).join('\n')
         : '- No training sessions recorded'}
@@ -90,26 +71,22 @@ Please analyze this training data and provide:
 5. **Weekly Plan Suggestion** — Outline a sample week of training that fits this user's goal
 `
 
-    // 5. Call DeepSeek
     const analysis = await chatCompletion(userPrompt, TRAINING_SYSTEM_PROMPT)
 
-    // 6. Save to database
-    await pool.query<ResultSetHeader>(
+    await pool.query(
       `INSERT INTO ai_analyses (user_id, analysis_type, request_data, response_text)
-       VALUES (?, 'training', ?, ?)`,
+       VALUES ($1, 'training', $2, $3)`,
       [
         req.userId!,
-        JSON.stringify({ sessionsCount: sessionRows.length, programsCount: programRows.length }),
+        JSON.stringify({ sessionsCount: sessionResult.rows.length, programsCount: programResult.rows.length }),
         analysis,
       ]
     )
 
-    // 7. Return to client
     res.json({ analysis, generatedAt: new Date().toISOString() })
   } catch (err: any) {
     console.error('Training analysis error:', err)
 
-    // If DeepSeek API fails, give a clear error
     if (err.message?.includes('DeepSeek')) {
       res.status(502).json({ error: 'AI service unavailable: ' + err.message })
       return
@@ -119,37 +96,31 @@ Please analyze this training data and provide:
   }
 }
 
-// ============================================================
-// POST /api/ai/diet-recommendation
-// ============================================================
 export const dietRecommendation = async (req: AuthRequest, res: Response) => {
   try {
-    // 1. Fetch user profile
-    const [userRows] = await pool.query<RowDataPacket[]>(
+    const userResult = await pool.query(
       `SELECT name, age, weight_kg, height_cm, fitness_goal
-       FROM users WHERE id = ?`,
+       FROM users WHERE id = $1`,
       [req.userId!]
     )
 
-    if (userRows.length === 0) {
+    if (userResult.rows.length === 0) {
       res.status(404).json({ error: 'User not found' })
       return
     }
 
-    const user = userRows[0]
+    const user = userResult.rows[0]
 
-    // 2. Fetch diet records from last 7 days
-    const [dietRows] = await pool.query<RowDataPacket[]>(
+    const dietResult = await pool.query(
       `SELECT meal_type, food_name, calories, protein_grams, carbs_grams, fat_grams, recorded_at
        FROM diet_records
-       WHERE user_id = ? AND recorded_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+       WHERE user_id = $1 AND recorded_at >= CURRENT_DATE - INTERVAL '7 days'
        ORDER BY recorded_at DESC, created_at DESC
        LIMIT 50`,
       [req.userId!]
     )
 
-    // 3. Get daily calorie/macro totals for the last 7 days
-    const [dailyTotals] = await pool.query<RowDataPacket[]>(
+    const dailyResult = await pool.query(
       `SELECT
          recorded_at,
          COALESCE(SUM(calories), 0) as daily_calories,
@@ -157,13 +128,12 @@ export const dietRecommendation = async (req: AuthRequest, res: Response) => {
          COALESCE(SUM(carbs_grams), 0) as daily_carbs,
          COALESCE(SUM(fat_grams), 0) as daily_fat
        FROM diet_records
-       WHERE user_id = ? AND recorded_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+       WHERE user_id = $1 AND recorded_at >= CURRENT_DATE - INTERVAL '7 days'
        GROUP BY recorded_at
        ORDER BY recorded_at DESC`,
       [req.userId!]
     )
 
-    // 4. Build the prompt
     const userPrompt = `
 ## User Profile
 - Name: ${user.name}
@@ -173,15 +143,15 @@ export const dietRecommendation = async (req: AuthRequest, res: Response) => {
 - Fitness Goal: ${user.fitness_goal ?? 'general'}
 
 ## Daily Calorie/Macro Totals (last 7 days)
-${dailyTotals.length > 0
-        ? dailyTotals.map((d: any) =>
+${dailyResult.rows.length > 0
+        ? dailyResult.rows.map((d: any) =>
           `- ${d.recorded_at}: ${d.daily_calories} kcal | P:${d.daily_protein}g C:${d.daily_carbs}g F:${d.daily_fat}g`
         ).join('\n')
         : '- No diet records'}
 
 ## Recent Meals
-${dietRows.length > 0
-        ? dietRows.map((r: any) =>
+${dietResult.rows.length > 0
+        ? dietResult.rows.map((r: any) =>
           `- [${r.meal_type}] ${r.food_name} — ${r.calories ?? '?'} kcal${r.protein_grams ? `, ${r.protein_grams}g protein` : ''}`
         ).join('\n')
         : '- No meals recorded'}
@@ -196,21 +166,18 @@ Based on the user's profile, fitness goal, and eating patterns, provide:
 5. **3-Day Meal Plan** — A sample 3-day meal plan with specific foods, portions, and macro estimates. Include breakfast, lunch, dinner, and snacks for each day. Tailor to their fitness goal.
 `
 
-    // 5. Call DeepSeek
     const recommendation = await chatCompletion(userPrompt, DIET_SYSTEM_PROMPT)
 
-    // 6. Save to database
-    await pool.query<ResultSetHeader>(
+    await pool.query(
       `INSERT INTO ai_analyses (user_id, analysis_type, request_data, response_text)
-       VALUES (?, 'diet', ?, ?)`,
+       VALUES ($1, 'diet', $2, $3)`,
       [
         req.userId!,
-        JSON.stringify({ dietEntries: dietRows.length, dailySummaries: dailyTotals.length }),
+        JSON.stringify({ dietEntries: dietResult.rows.length, dailySummaries: dailyResult.rows.length }),
         recommendation,
       ]
     )
 
-    // 7. Return to client
     res.json({ recommendation, generatedAt: new Date().toISOString() })
   } catch (err: any) {
     console.error('Diet recommendation error:', err)
@@ -224,25 +191,22 @@ Based on the user's profile, fitness goal, and eating patterns, provide:
   }
 }
 
-// ============================================================
-// GET /api/ai/history — get past analyses
-// ============================================================
 export const getHistory = async (req: AuthRequest, res: Response) => {
   try {
-    const type = (req.query as any).type // optional filter: 'training' or 'diet'
+    const type = (req.query as any).type
 
-    let query = 'SELECT id, analysis_type, response_text, created_at FROM ai_analyses WHERE user_id = ?'
+    let query = 'SELECT id, analysis_type, response_text, created_at FROM ai_analyses WHERE user_id = $1'
     const params: any[] = [req.userId!]
 
     if (type && ['training', 'diet'].includes(type)) {
-      query += ' AND analysis_type = ?'
+      query += ' AND analysis_type = $2'
       params.push(type)
     }
 
     query += ' ORDER BY created_at DESC LIMIT 20'
 
-    const [rows] = await pool.query<RowDataPacket[]>(query, params)
-    res.json({ analyses: rows })
+    const result = await pool.query(query, params)
+    res.json({ analyses: result.rows })
   } catch (err) {
     console.error('Get history error:', err)
     res.status(500).json({ error: 'Internal server error' })
