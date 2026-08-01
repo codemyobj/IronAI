@@ -1,43 +1,64 @@
 import { Response } from 'express'
-import pool from '../config/db'
+import prisma from '../config/prisma'
 import { AuthRequest } from '../middleware/auth'
 import { chatCompletion, TRAINING_SYSTEM_PROMPT, DIET_SYSTEM_PROMPT } from '../services/deepseek'
+import { formatDate } from '../utils/format'
 
 export const trainingAnalysis = async (req: AuthRequest, res: Response) => {
   try {
-    const userResult = await pool.query(
-      `SELECT name, age, weight_kg, height_cm, fitness_goal
-       FROM users WHERE id = $1`,
-      [req.userId!]
-    )
+    const user = await prisma.user.findFirst({
+      where: { id: req.userId! },
+      select: {
+        name: true,
+        age: true,
+        weight_kg: true,
+        height_cm: true,
+        fitness_goal: true,
+      },
+    })
 
-    if (userResult.rows.length === 0) {
+    if (!user) {
       res.status(404).json({ error: 'User not found' })
       return
     }
 
-    const user = userResult.rows[0]
+    const thirtyDaysAgo = new Date()
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
-    const sessionResult = await pool.query(
-      `SELECT ts.started_at, ts.duration_minutes, ts.perceived_effort, ts.notes,
-              tp.name as program_name
-       FROM training_sessions ts
-       LEFT JOIN training_programs tp ON ts.program_id = tp.id
-       WHERE ts.user_id = $1
-         AND ts.started_at >= NOW() - INTERVAL '30 days'
-       ORDER BY ts.started_at DESC
-       LIMIT 30`,
-      [req.userId!]
-    )
+    const sessions = await prisma.trainingSession.findMany({
+      where: {
+        user_id: req.userId!,
+        started_at: { gte: thirtyDaysAgo },
+      },
+      include: {
+        program: { select: { name: true } },
+      },
+      orderBy: { started_at: 'desc' },
+      take: 30,
+    })
 
-    const programResult = await pool.query(
-      `SELECT tp.name, tp.difficulty, tp.target_muscle_group, COUNT(e.id) as exercise_count
-       FROM training_programs tp
-       LEFT JOIN exercises e ON tp.id = e.program_id
-       WHERE tp.user_id = $1 AND tp.is_active = TRUE
-       GROUP BY tp.id`,
-      [req.userId!]
-    )
+    // flatten program_name
+    const sessionData = sessions.map(s => ({
+      started_at: s.started_at,
+      duration_minutes: s.duration_minutes,
+      perceived_effort: s.perceived_effort,
+      notes: s.notes,
+      program_name: s.program?.name ?? null,
+    }))
+
+    const programs = await prisma.trainingProgram.findMany({
+      where: { user_id: req.userId!, is_active: true },
+      include: {
+        _count: { select: { exercises: true } },
+      },
+    })
+
+    const programData = programs.map(p => ({
+      name: p.name,
+      difficulty: p.difficulty,
+      target_muscle_group: p.target_muscle_group,
+      exercise_count: p._count.exercises,
+    }))
 
     const userPrompt = `
 ## User Profile
@@ -48,15 +69,15 @@ export const trainingAnalysis = async (req: AuthRequest, res: Response) => {
 - Goal: ${user.fitness_goal ?? 'general'}
 
 ## Active Training Programs
-${programResult.rows.length > 0
-        ? programResult.rows.map((p: any) =>
+${programData.length > 0
+        ? programData.map((p) =>
           `- **${p.name}** — ${p.difficulty}, target: ${p.target_muscle_group ?? 'full body'}, ${p.exercise_count} exercises`
         ).join('\n')
         : '- No active programs'}
 
 ## Recent Training Sessions (last 30 days)
-${sessionResult.rows.length > 0
-        ? sessionResult.rows.map((s: any) =>
+${sessionData.length > 0
+        ? sessionData.map((s) =>
           `- ${new Date(s.started_at).toLocaleDateString()}: ${s.program_name ?? 'Freestyle workout'}, ${s.duration_minutes ?? '?'} min, effort ${s.perceived_effort ?? '?'}/10${s.notes ? ` — ${s.notes}` : ''}`
         ).join('\n')
         : '- No training sessions recorded'}
@@ -73,15 +94,17 @@ Please analyze this training data and provide:
 
     const analysis = await chatCompletion(userPrompt, TRAINING_SYSTEM_PROMPT)
 
-    await pool.query(
-      `INSERT INTO ai_analyses (user_id, analysis_type, request_data, response_text)
-       VALUES ($1, 'training', $2, $3)`,
-      [
-        req.userId!,
-        JSON.stringify({ sessionsCount: sessionResult.rows.length, programsCount: programResult.rows.length }),
-        analysis,
-      ]
-    )
+    await prisma.aIAnalysis.create({
+      data: {
+        user_id: req.userId!,
+        analysis_type: 'training',
+        request_data: {
+          sessionsCount: sessionData.length,
+          programsCount: programData.length,
+        },
+        response_text: analysis,
+      },
+    })
 
     res.json({ analysis, generatedAt: new Date().toISOString() })
   } catch (err: any) {
@@ -98,41 +121,68 @@ Please analyze this training data and provide:
 
 export const dietRecommendation = async (req: AuthRequest, res: Response) => {
   try {
-    const userResult = await pool.query(
-      `SELECT name, age, weight_kg, height_cm, fitness_goal
-       FROM users WHERE id = $1`,
-      [req.userId!]
-    )
+    const user = await prisma.user.findFirst({
+      where: { id: req.userId! },
+      select: {
+        name: true,
+        age: true,
+        weight_kg: true,
+        height_cm: true,
+        fitness_goal: true,
+      },
+    })
 
-    if (userResult.rows.length === 0) {
+    if (!user) {
       res.status(404).json({ error: 'User not found' })
       return
     }
 
-    const user = userResult.rows[0]
+    const sevenDaysAgo = new Date()
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
 
-    const dietResult = await pool.query(
-      `SELECT meal_type, food_name, calories, protein_grams, carbs_grams, fat_grams, recorded_at
-       FROM diet_records
-       WHERE user_id = $1 AND recorded_at >= CURRENT_DATE - INTERVAL '7 days'
-       ORDER BY recorded_at DESC, created_at DESC
-       LIMIT 50`,
-      [req.userId!]
-    )
+    const dietRecords = await prisma.dietRecord.findMany({
+      where: {
+        user_id: req.userId!,
+        recorded_at: { gte: sevenDaysAgo },
+      },
+      orderBy: [
+        { recorded_at: 'desc' },
+        { created_at: 'desc' },
+      ],
+      take: 50,
+      select: {
+        meal_type: true,
+        food_name: true,
+        calories: true,
+        protein_grams: true,
+        carbs_grams: true,
+        fat_grams: true,
+        recorded_at: true,
+      },
+    })
 
-    const dailyResult = await pool.query(
-      `SELECT
-         recorded_at,
-         COALESCE(SUM(calories), 0) as daily_calories,
-         COALESCE(SUM(protein_grams), 0) as daily_protein,
-         COALESCE(SUM(carbs_grams), 0) as daily_carbs,
-         COALESCE(SUM(fat_grams), 0) as daily_fat
-       FROM diet_records
-       WHERE user_id = $1 AND recorded_at >= CURRENT_DATE - INTERVAL '7 days'
-       GROUP BY recorded_at
-       ORDER BY recorded_at DESC`,
-      [req.userId!]
-    )
+    const dailyAgg = await prisma.dietRecord.groupBy({
+      by: ['recorded_at'],
+      where: {
+        user_id: req.userId!,
+        recorded_at: { gte: sevenDaysAgo },
+      },
+      _sum: {
+        calories: true,
+        protein_grams: true,
+        carbs_grams: true,
+        fat_grams: true,
+      },
+      orderBy: { recorded_at: 'desc' },
+    })
+
+    const dailyData = dailyAgg.map(d => ({
+      recorded_at: formatDate(d.recorded_at),
+      daily_calories: d._sum.calories ?? 0,
+      daily_protein: d._sum.protein_grams ?? 0,
+      daily_carbs: d._sum.carbs_grams ?? 0,
+      daily_fat: d._sum.fat_grams ?? 0,
+    }))
 
     const userPrompt = `
 ## User Profile
@@ -143,15 +193,15 @@ export const dietRecommendation = async (req: AuthRequest, res: Response) => {
 - Fitness Goal: ${user.fitness_goal ?? 'general'}
 
 ## Daily Calorie/Macro Totals (last 7 days)
-${dailyResult.rows.length > 0
-        ? dailyResult.rows.map((d: any) =>
+${dailyData.length > 0
+        ? dailyData.map((d) =>
           `- ${d.recorded_at}: ${d.daily_calories} kcal | P:${d.daily_protein}g C:${d.daily_carbs}g F:${d.daily_fat}g`
         ).join('\n')
         : '- No diet records'}
 
 ## Recent Meals
-${dietResult.rows.length > 0
-        ? dietResult.rows.map((r: any) =>
+${dietRecords.length > 0
+        ? dietRecords.map((r) =>
           `- [${r.meal_type}] ${r.food_name} — ${r.calories ?? '?'} kcal${r.protein_grams ? `, ${r.protein_grams}g protein` : ''}`
         ).join('\n')
         : '- No meals recorded'}
@@ -168,15 +218,17 @@ Based on the user's profile, fitness goal, and eating patterns, provide:
 
     const recommendation = await chatCompletion(userPrompt, DIET_SYSTEM_PROMPT)
 
-    await pool.query(
-      `INSERT INTO ai_analyses (user_id, analysis_type, request_data, response_text)
-       VALUES ($1, 'diet', $2, $3)`,
-      [
-        req.userId!,
-        JSON.stringify({ dietEntries: dietResult.rows.length, dailySummaries: dailyResult.rows.length }),
-        recommendation,
-      ]
-    )
+    await prisma.aIAnalysis.create({
+      data: {
+        user_id: req.userId!,
+        analysis_type: 'diet',
+        request_data: {
+          dietEntries: dietRecords.length,
+          dailySummaries: dailyData.length,
+        },
+        response_text: recommendation,
+      },
+    })
 
     res.json({ recommendation, generatedAt: new Date().toISOString() })
   } catch (err: any) {
@@ -195,18 +247,24 @@ export const getHistory = async (req: AuthRequest, res: Response) => {
   try {
     const type = (req.query as any).type
 
-    let query = 'SELECT id, analysis_type, response_text, created_at FROM ai_analyses WHERE user_id = $1'
-    const params: any[] = [req.userId!]
-
+    const where: any = { user_id: req.userId! }
     if (type && ['training', 'diet'].includes(type)) {
-      query += ' AND analysis_type = $2'
-      params.push(type)
+      where.analysis_type = type
     }
 
-    query += ' ORDER BY created_at DESC LIMIT 20'
+    const analyses = await prisma.aIAnalysis.findMany({
+      where,
+      orderBy: { created_at: 'desc' },
+      take: 20,
+      select: {
+        id: true,
+        analysis_type: true,
+        response_text: true,
+        created_at: true,
+      },
+    })
 
-    const result = await pool.query(query, params)
-    res.json({ analyses: result.rows })
+    res.json({ analyses })
   } catch (err) {
     console.error('Get history error:', err)
     res.status(500).json({ error: 'Internal server error' })

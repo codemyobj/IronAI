@@ -1,0 +1,126 @@
+// ============================================================
+// IronAI Prisma Schema
+// 数据库已存在所有表和数据，不运行 prisma migrate。
+// 此 schema 与现有 DB 结构精确匹配，仅用于 prisma generate。
+//
+// 注意：DB 的 CHECK 约束列（fitness_goal/difficulty/meal_type/analysis_type）
+// 是 varchar+CHECK，不是 PG 原生 enum。因此 Prisma 用 String 类型，
+// 类型安全由 controller 层验证 + Body 接口联合类型保证。
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------- Models ----------
+
+model User {
+  id            Int      @id @default(autoincrement())
+  email         String   @unique @db.VarChar(255)
+  password_hash String   @db.VarChar(255)
+  name          String   @db.VarChar(100)
+  age           Int?
+  height_cm     Float?
+  weight_kg     Float?
+  fitness_goal  String   @default("general") @db.VarChar(50)
+  created_at    DateTime @default(now()) @db.Timestamptz
+  updated_at    DateTime @default(now()) @db.Timestamptz
+
+  training_programs TrainingProgram[]
+  training_sessions TrainingSession[]
+  diet_records      DietRecord[]
+  ai_analyses       AIAnalysis[]
+
+  @@map("users")
+}
+
+model TrainingProgram {
+  id                  Int      @id @default(autoincrement())
+  user_id             Int
+  name                String   @db.VarChar(200)
+  description         String?  @db.Text
+  difficulty          String   @default("beginner") @db.VarChar(50)
+  target_muscle_group String?  @db.VarChar(100)
+  is_active           Boolean  @default(true)
+  created_at          DateTime @default(now()) @db.Timestamptz
+
+  user              User               @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  exercises         Exercise[]
+  training_sessions TrainingSession[]
+
+  @@index([user_id])
+  @@map("training_programs")
+}
+
+model Exercise {
+  id           Int      @id @default(autoincrement())
+  program_id   Int
+  name         String   @db.VarChar(200)
+  sets         Int      @default(3)
+  reps         Int      @default(10)
+  weight_kg    Float?
+  rest_seconds Int      @default(60)
+  notes        String?  @db.Text
+  sort_order   Int      @default(0)
+
+  program TrainingProgram @relation(fields: [program_id], references: [id], onDelete: Cascade)
+
+  @@index([program_id])
+  @@map("exercises")
+}
+
+model TrainingSession {
+  id               Int       @id @default(autoincrement())
+  user_id          Int
+  program_id       Int?
+  started_at       DateTime  @default(now()) @db.Timestamptz
+  ended_at         DateTime? @db.Timestamptz
+  duration_minutes Int?
+  perceived_effort Int?
+  notes            String?   @db.Text
+
+  user    User             @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  program TrainingProgram? @relation(fields: [program_id], references: [id], onDelete: SetNull)
+
+  @@index([user_id])
+  @@index([program_id])
+  @@map("training_sessions")
+}
+
+model DietRecord {
+  id                  Int      @id @default(autoincrement())
+  user_id             Int
+  meal_type           String   @db.VarChar(20)
+  food_name           String   @db.VarChar(300)
+  calories            Int?
+  protein_grams       Float?
+  carbs_grams         Float?
+  fat_grams           Float?
+  portion_description String?  @db.VarChar(200)
+  recorded_at         DateTime @default(now()) @db.Date
+  created_at          DateTime @default(now()) @db.Timestamptz
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id, recorded_at])
+  @@map("diet_records")
+}
+
+model AIAnalysis {
+  id            Int      @id @default(autoincrement())
+  user_id       Int
+  analysis_type String   @db.VarChar(50)
+  request_data  Json?
+  response_text String   @db.Text
+  created_at    DateTime @default(now()) @db.Timestamptz
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@map("ai_analyses")
+}
