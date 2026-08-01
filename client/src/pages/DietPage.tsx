@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useDiet } from '../hooks/useDiet';
+import { useTranslation } from 'react-i18next';
+import { DietSkeleton } from '../components/Skeleton';
 
 const MEAL_TYPES = ['breakfast', 'lunch', 'dinner', 'snack'] as const;
 
@@ -15,6 +17,8 @@ export default function DietPage() {
     addRecord,
     deleteRecord,
   } = useDiet();
+
+  const { t } = useTranslation();
 
   // Add food form
   const [showAddForm, setShowAddForm] = useState(false);
@@ -40,7 +44,7 @@ export default function DietPage() {
   const handleAddRecord = async () => {
     setFormError('');
     if (!foodName.trim()) {
-      setFormError('Food name is required');
+      setFormError(t('common.foodNameRequired'));
       return;
     }
     setSaving(true);
@@ -58,14 +62,14 @@ export default function DietPage() {
       setShowAddForm(false);
       resetForm();
     } catch (err: any) {
-      setFormError(err.response?.data?.error || 'Failed to add food');
+      setFormError(err.response?.data?.error || t('common.addFoodFailed'));
     } finally {
       setSaving(false);
     }
   };
 
   const handleDeleteRecord = async (id: number) => {
-    if (!confirm('Delete this food entry?')) return;
+    if (!confirm(t('common.confirmDeleteFood'))) return;
     try {
       await deleteRecord(id);
     } catch {
@@ -102,21 +106,23 @@ export default function DietPage() {
   }
 
   if (loading && records.length === 0) {
-    return <div className="page-loading">Loading diet records...</div>;
+    return <DietSkeleton />;
   }
 
   return (
     <div className="diet-page">
       <div className="page-header">
-        <h1>Diet Tracker</h1>
+        <h1>{t('diet.title')}</h1>
         <button className="btn btn-primary" onClick={() => setShowAddForm(true)}>
-          + Add Food
+          {t('diet.addFood')}
         </button>
       </div>
 
       {/* Date Picker */}
       <div className="date-picker">
-        <button className="btn btn-outline btn-sm" onClick={() => changeDate(-1)}>◀</button>
+        <button className="btn btn-outline btn-sm" onClick={() => changeDate(-1)}>
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
         <input
           type="date"
           value={selectedDate}
@@ -124,10 +130,10 @@ export default function DietPage() {
           max={todayStr}
         />
         <button className="btn btn-outline btn-sm" onClick={() => changeDate(1)} disabled={selectedDate >= todayStr}>
-          ▶
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
         </button>
         <button className="btn btn-outline btn-sm" onClick={() => setSelectedDate(todayStr)}>
-          Today
+          {t('diet.today')}
         </button>
       </div>
 
@@ -137,27 +143,27 @@ export default function DietPage() {
       <div className="macro-bar">
         <div className="macro-item">
           <span className="macro-value">{todayTotals.calories}</span>
-          <span className="macro-label">Calories</span>
+          <span className="macro-label">{t('diet.calories')}</span>
         </div>
         <div className="macro-item">
           <span className="macro-value">{Number(todayTotals.protein).toFixed(1)}g</span>
-          <span className="macro-label">Protein</span>
+          <span className="macro-label">{t('diet.protein')}</span>
         </div>
         <div className="macro-item">
           <span className="macro-value">{Number(todayTotals.carbs).toFixed(1)}g</span>
-          <span className="macro-label">Carbs</span>
+          <span className="macro-label">{t('diet.carbs')}</span>
         </div>
         <div className="macro-item">
           <span className="macro-value">{Number(todayTotals.fat).toFixed(1)}g</span>
-          <span className="macro-label">Fat</span>
+          <span className="macro-label">{t('diet.fat')}</span>
         </div>
       </div>
 
       {/* Meal Type Groups */}
       {records.length === 0 ? (
         <div className="empty-state">
-          <p>No meals logged for this day.</p>
-          <p className="text-muted">Tap "+ Add Food" to start tracking your diet!</p>
+          <p>{t('diet.noMeals')}</p>
+          <p className="text-muted">{t('diet.emptyState')}</p>
         </div>
       ) : (
         <div className="meals-container">
@@ -166,7 +172,7 @@ export default function DietPage() {
             if (meals.length === 0) return null;
             return (
               <div key={type} className="meal-group">
-                <h3 className="meal-type-title">{type}</h3>
+                <h3 className="meal-type-title">{t(`diet.${type}`)}</h3>
                 <div className="meal-items">
                   {meals.map(record => (
                     <div key={record.id} className="meal-item">
@@ -200,7 +206,7 @@ export default function DietPage() {
       {/* Weekly Summary */}
       {dailyBreakdown.length > 0 && (
         <div className="weekly-summary">
-          <h2>This Week's Overview</h2>
+          <h2>{t('diet.weeklyOverview')}</h2>
           <div className="weekly-grid">
             {dailyBreakdown.map(day => (
               <div key={day.recorded_at} className="weekly-day">
@@ -216,8 +222,8 @@ export default function DietPage() {
           </div>
           {summary && (
             <div className="weekly-totals">
-              <span>Weekly avg: {(Number(summary.total_calories) / dailyBreakdown.filter(d => d.entries > 0).length || 1).toFixed(0)} kcal/day</span>
-              <span>Total protein: {Number(summary.total_protein).toFixed(0)}g</span>
+              <span>{t('diet.weeklyAvg', { avg: (Number(summary.total_calories) / dailyBreakdown.filter(d => d.entries > 0).length || 1).toFixed(0) })}</span>
+              <span>{t('diet.totalProtein', { protein: Number(summary.total_protein).toFixed(0) })}</span>
             </div>
           )}
         </div>
@@ -228,63 +234,63 @@ export default function DietPage() {
         <div className="modal-overlay" onClick={() => { setShowAddForm(false); resetForm(); }}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h2>Add Food Entry</h2>
+              <h2>{t('diet.addFoodTitle')}</h2>
               <button className="btn-close" onClick={() => { setShowAddForm(false); resetForm(); }}>✕</button>
             </div>
             <div className="modal-body">
               {formError && <div className="alert alert-error">{formError}</div>}
 
               <div className="form-group">
-                <label>Meal Type *</label>
+                <label>{t('diet.mealType')} *</label>
                 <select value={mealType} onChange={e => setMealType(e.target.value)}>
-                  {MEAL_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                  {MEAL_TYPES.map(mt => <option key={mt} value={mt}>{t(`diet.${mt}`)}</option>)}
                 </select>
               </div>
 
               <div className="form-group">
-                <label>Food Name *</label>
+                <label>{t('diet.foodName')} *</label>
                 <input
                   type="text"
                   value={foodName}
                   onChange={e => setFoodName(e.target.value)}
-                  placeholder="e.g. Grilled Chicken Breast"
+                  placeholder={t('diet.foodNamePlaceholder')}
                 />
               </div>
 
               <div className="form-group">
-                <label>Portion Description</label>
+                <label>{t('diet.portion')}</label>
                 <input
                   type="text"
                   value={portion}
                   onChange={e => setPortion(e.target.value)}
-                  placeholder="e.g. 200g, 1 cup, 2 slices"
+                  placeholder={t('diet.portionPlaceholder')}
                 />
               </div>
 
               <div className="form-row">
                 <div className="form-group">
-                  <label>Calories</label>
+                  <label>{t('diet.calories')}</label>
                   <input type="number" value={calories ?? ''} onChange={e => setCalories(e.target.value ? Number(e.target.value) : undefined)} placeholder="350" min={0} />
                 </div>
                 <div className="form-group">
-                  <label>Protein (g)</label>
+                  <label>{t('diet.protein')} (g)</label>
                   <input type="number" value={protein ?? ''} onChange={e => setProtein(e.target.value ? Number(e.target.value) : undefined)} placeholder="30" step="0.1" min={0} />
                 </div>
               </div>
 
               <div className="form-row">
                 <div className="form-group">
-                  <label>Carbs (g)</label>
+                  <label>{t('diet.carbs')} (g)</label>
                   <input type="number" value={carbs ?? ''} onChange={e => setCarbs(e.target.value ? Number(e.target.value) : undefined)} placeholder="40" step="0.1" min={0} />
                 </div>
                 <div className="form-group">
-                  <label>Fat (g)</label>
+                  <label>{t('diet.fat')} (g)</label>
                   <input type="number" value={fat ?? ''} onChange={e => setFat(e.target.value ? Number(e.target.value) : undefined)} placeholder="10" step="0.1" min={0} />
                 </div>
               </div>
 
               <button className="btn btn-primary btn-full" onClick={handleAddRecord} disabled={saving}>
-                {saving ? 'Adding...' : 'Add Food'}
+                {saving ? t('diet.adding') : t('diet.submit')}
               </button>
             </div>
           </div>

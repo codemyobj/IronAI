@@ -1,19 +1,21 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../hooks/useAuth';
 import type { RegisterData } from '../types';
 
-const FITNESS_GOALS = [
-  { value: 'general', label: 'General Fitness' },
-  { value: 'lose_weight', label: 'Lose Weight' },
-  { value: 'build_muscle', label: 'Build Muscle' },
-  { value: 'endurance', label: 'Endurance' },
-];
-
 export default function RegisterPage() {
+  const { t } = useTranslation();
   const { register } = useAuth();
   const navigate = useNavigate();
+
+  const fitnessGoals = [
+    { value: 'general', label: t('goals.general') },
+    { value: 'lose_weight', label: t('goals.weight_loss') },
+    { value: 'build_muscle', label: t('goals.build_muscle') },
+    { value: 'endurance', label: t('goals.endurance') },
+  ];
 
   const [form, setForm] = useState<RegisterData>({
     email: '',
@@ -36,15 +38,15 @@ export default function RegisterPage() {
     setError('');
 
     if (!form.email.trim() || !form.password.trim() || !form.name.trim()) {
-      setError('Email, password, and name are required');
+      setError(t('common.requiredFields'));
       return;
     }
     if (form.password.length < 6) {
-      setError('Password must be at least 6 characters');
+      setError(t('common.passwordTooShort'));
       return;
     }
     if (!form.email.includes('@')) {
-      setError('Please enter a valid email');
+      setError(t('common.invalidEmail'));
       return;
     }
 
@@ -53,7 +55,7 @@ export default function RegisterPage() {
       await register(form);
       navigate('/dashboard');
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Registration failed. Please try again.');
+      setError(err.response?.data?.error || t('common.registerFailed'));
     } finally {
       setLoading(false);
     }
@@ -62,59 +64,63 @@ export default function RegisterPage() {
   return (
     <div className="auth-page">
       <div className="auth-card">
-        <h1 className="auth-title">Create Account</h1>
-        <p className="auth-subtitle">Start your fitness journey with IronAI</p>
+        <div className="auth-brand">
+          <span className="navbar-logo">I</span>
+          <span className="auth-brand-name">IronAI</span>
+        </div>
+        <h1 className="auth-title">{t('auth.register.title')}</h1>
+        <p className="auth-subtitle">{t('auth.register.subtitle')}</p>
 
         {error && <div className="alert alert-error">{error}</div>}
 
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
-            <label htmlFor="name">Full Name *</label>
+            <label htmlFor="name">{t('auth.register.name')} *</label>
             <input
               id="name"
               type="text"
               value={form.name}
               onChange={e => updateField('name', e.target.value)}
-              placeholder="John Doe"
+              placeholder={t('auth.register.namePlaceholder')}
               disabled={loading}
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="email">Email *</label>
+            <label htmlFor="email">{t('auth.register.email')} *</label>
             <input
               id="email"
               type="email"
               value={form.email}
               onChange={e => updateField('email', e.target.value)}
-              placeholder="you@example.com"
+              placeholder={t('auth.register.emailPlaceholder')}
               autoComplete="email"
               disabled={loading}
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="password">Password * (min 6 characters)</label>
+            <label htmlFor="password">{t('auth.register.password')}</label>
             <input
               id="password"
               type="password"
               value={form.password}
               onChange={e => updateField('password', e.target.value)}
-              placeholder="At least 6 characters"
+              placeholder={t('auth.register.passwordPlaceholder')}
               autoComplete="new-password"
               disabled={loading}
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="goal">Fitness Goal</label>
+            <label htmlFor="goal">{t('auth.register.fitnessGoal')}</label>
             <select
               id="goal"
               value={form.fitness_goal}
               onChange={e => updateField('fitness_goal', e.target.value)}
               disabled={loading}
             >
-              {FITNESS_GOALS.map(g => (
+              {fitnessGoals.map(g => (
                 <option key={g.value} value={g.value}>{g.label}</option>
               ))}
             </select>
@@ -122,7 +128,7 @@ export default function RegisterPage() {
 
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="age">Age</label>
+              <label htmlFor="age">{t('auth.register.age')}</label>
               <input
                 id="age"
                 type="number"
@@ -130,13 +136,13 @@ export default function RegisterPage() {
                 max={120}
                 value={form.age ?? ''}
                 onChange={e => updateField('age', e.target.value ? Number(e.target.value) : undefined)}
-                placeholder="25"
+                placeholder={t('auth.register.agePlaceholder')}
                 disabled={loading}
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="height">Height (cm)</label>
+              <label htmlFor="height">{t('auth.register.height')}</label>
               <input
                 id="height"
                 type="number"
@@ -145,13 +151,13 @@ export default function RegisterPage() {
                 max={250}
                 value={form.height_cm ?? ''}
                 onChange={e => updateField('height_cm', e.target.value ? Number(e.target.value) : undefined)}
-                placeholder="175"
+                placeholder={t('auth.register.heightPlaceholder')}
                 disabled={loading}
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="weight">Weight (kg)</label>
+              <label htmlFor="weight">{t('auth.register.weight')}</label>
               <input
                 id="weight"
                 type="number"
@@ -160,19 +166,19 @@ export default function RegisterPage() {
                 max={300}
                 value={form.weight_kg ?? ''}
                 onChange={e => updateField('weight_kg', e.target.value ? Number(e.target.value) : undefined)}
-                placeholder="70"
+                placeholder={t('auth.register.weightPlaceholder')}
                 disabled={loading}
               />
             </div>
           </div>
 
           <button type="submit" className="btn btn-primary btn-full" disabled={loading}>
-            {loading ? 'Creating account...' : 'Create Account'}
+            {loading ? t('auth.register.submitting') : t('auth.register.submit')}
           </button>
         </form>
 
         <p className="auth-footer">
-          Already have an account? <Link to="/login">Log in</Link>
+          {t('auth.register.hasAccount')} <Link to="/login">{t('auth.register.login')}</Link>
         </p>
       </div>
     </div>

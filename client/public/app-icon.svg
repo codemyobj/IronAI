@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.15"/>
+    </filter>
+  </defs>
+  <!-- 圆角方形背景 -->
+  <rect width="512" height="512" rx="112" ry="112" fill="url(#bg)"/>
+  <!-- 哑铃图标 -->
+  <g filter="url(#shadow)" fill="#ffffff" transform="translate(256 256)">
+    <!-- 左侧杠铃片 -->
+    <rect x="-150" y="-35" width="30" height="70" rx="8"/>
+    <rect x="-120" y="-50" width="24" height="100" rx="6"/>
+    <!-- 右侧杠铃片 -->
+    <rect x="96" y="-50" width="24" height="100" rx="6"/>
+    <rect x="120" y="-35" width="30" height="70" rx="8"/>
+    <!-- 杠铃杆 -->
+    <rect x="-96" y="-12" width="192" height="24" rx="12"/>
+    <!-- 中间装饰：AI 闪电 -->
+    <path d="M -8 -45 L 8 -45 L 2 -8 L 14 -8 L -2 45 L 4 5 L -8 5 Z" fill="#ffffff" opacity="0.95"/>
+  </g>
+</svg>

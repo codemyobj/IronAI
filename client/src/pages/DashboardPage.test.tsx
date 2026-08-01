@@ -47,7 +47,7 @@ const mockSessions = [
 ]
 
 function setupAuth(user: any = mockUser) {
-  mockUseAuth.mockReturnValue({ user, loading: false })
+  mockUseAuth.mockReturnValue({ user, loading: false, logout: vi.fn() })
 }
 
 function setupApiResponses(overrides: Record<string, any> = {}) {
@@ -80,14 +80,14 @@ describe('DashboardPage', () => {
   it('shows loading state initially', () => {
     render(<DashboardPage />, { wrapper: MemoryRouter })
 
-    expect(screen.getByText('Loading dashboard...')).toBeInTheDocument()
+    expect(document.querySelector('.skeleton')).toBeInTheDocument()
   })
 
   it('renders user greeting', async () => {
     render(<DashboardPage />, { wrapper: MemoryRouter })
 
     await waitFor(() => {
-      expect(screen.getByText(/Welcome back, Test User!/)).toBeInTheDocument()
+      expect(screen.getByText(/Hi, Test User/)).toBeInTheDocument()
     })
   })
 
@@ -95,7 +95,7 @@ describe('DashboardPage', () => {
     render(<DashboardPage />, { wrapper: MemoryRouter })
 
     await waitFor(() => {
-      expect(screen.getByText(/Goal: Build Muscle/)).toBeInTheDocument()
+      expect(screen.getByText(/Build Muscle/)).toBeInTheDocument()
     })
 
     expect(screen.getByText(/70 kg/)).toBeInTheDocument()
@@ -107,7 +107,8 @@ describe('DashboardPage', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Training Programs')).toBeInTheDocument()
-      expect(screen.getByText('Recent Sessions')).toBeInTheDocument()
+      // "Recent Sessions" appears both as a stat-card label and a section header
+      expect(screen.getAllByText('Recent Sessions').length).toBeGreaterThan(0)
       expect(screen.getByText("Today's Calories")).toBeInTheDocument()
     })
   })
@@ -132,8 +133,8 @@ describe('DashboardPage', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Quick Actions')).toBeInTheDocument()
-      expect(screen.getByText('New Training Program')).toBeInTheDocument()
-      expect(screen.getByText("Log Today's Meals")).toBeInTheDocument()
+      expect(screen.getByText('New Program')).toBeInTheDocument()
+      expect(screen.getByText('Log Meal')).toBeInTheDocument()
     })
   })
 

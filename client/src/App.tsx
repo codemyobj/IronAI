@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './hooks/useAuth';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
+import LanguageSwitcher from './components/LanguageSwitcher';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
@@ -14,6 +15,7 @@ export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
+        <LanguageSwitcher />
         <Routes>
           {/* Public routes */}
           <Route path="/login" element={<LoginPage />} />

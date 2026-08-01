@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
+import { useTranslation } from 'react-i18next';
 import apiClient from '../api';
 import type { AIAnalysis } from '../types';
 
 export default function AIAnalysisPage() {
+  const { t } = useTranslation();
   const [analysisResult, setAnalysisResult] = useState('');
   const [analysisType, setAnalysisType] = useState<'training' | 'diet'>('training');
   const [loading, setLoading] = useState(false);
@@ -24,9 +26,9 @@ export default function AIAnalysisPage() {
       setAnalysisResult(result);
     } catch (err: any) {
       if (err.response?.status === 502) {
-        setError('AI service is currently unavailable. Make sure your DeepSeek API key is configured correctly in the server .env file.');
+        setError(t('ai.serviceUnavailable'));
       } else {
-        setError(err.response?.data?.error || 'Failed to get AI analysis. Please try again.');
+        setError(err.response?.data?.error || t('ai.analysisFailed'));
       }
     } finally {
       setLoading(false);
@@ -39,47 +41,50 @@ export default function AIAnalysisPage() {
       setHistory(res.data.analyses);
       setShowHistory(true);
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to load history');
+      setError(err.response?.data?.error || t('ai.loadHistoryFailed'));
     }
   };
 
-  const getTypeLabel = (type: string) => type === 'training' ? '🏋️ Training' : '🥗 Diet';
+  const getTypeLabel = (type: string) => type === 'training' ? t('ai.training') : t('ai.diet');
 
   return (
     <div className="ai-page">
       <div className="page-header">
-        <h1>AI Coach</h1>
+        <h1>{t('ai.title')}</h1>
         <button className="btn btn-outline" onClick={loadHistory}>
-          History
+          {t('ai.history')}
         </button>
       </div>
 
       <p className="text-muted">
-        Get personalized, AI-powered analysis of your training data and diet patterns.
-        The more data you log, the better the recommendations!
+        {t('ai.description')}
       </p>
 
       {/* Action Buttons */}
       <div className="ai-actions">
         <div className="ai-action-card" onClick={() => !loading && handleAnalysis('training')}>
-          <div className="ai-action-icon">🏋️</div>
-          <h3>Training Analysis</h3>
+          <div className="ai-action-icon">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M6.5 6.5h11M6.5 17.5h11M4.5 9.5v5M19.5 9.5v5M9 4.5v15M15 4.5v15"/></svg>
+          </div>
+          <h3>{t('ai.trainingAnalysis')}</h3>
           <p className="text-muted">
-            Analyze your training frequency, volume, muscle balance, and get a personalized weekly plan.
+            {t('ai.trainingDesc')}
           </p>
           <button className="btn btn-primary" disabled={loading}>
-            {loading && analysisType === 'training' ? 'Analyzing...' : 'Analyze My Training'}
+            {loading && analysisType === 'training' ? t('ai.analyzing') : t('ai.analyzeTraining')}
           </button>
         </div>
 
         <div className="ai-action-card" onClick={() => !loading && handleAnalysis('diet')}>
-          <div className="ai-action-icon">🥗</div>
-          <h3>Diet Recommendations</h3>
+          <div className="ai-action-icon">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M3 11h18M5 11V8a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v3M5 11v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg>
+          </div>
+          <h3>{t('ai.dietRecommendations')}</h3>
           <p className="text-muted">
-            Get a detailed diet assessment with macro analysis and a 3-day meal plan tailored to your goal.
+            {t('ai.dietDesc')}
           </p>
           <button className="btn btn-primary" disabled={loading}>
-            {loading && analysisType === 'diet' ? 'Generating...' : 'Get Diet Plan'}
+            {loading && analysisType === 'diet' ? t('ai.generating') : t('ai.getDietPlan')}
           </button>
         </div>
       </div>
@@ -90,10 +95,10 @@ export default function AIAnalysisPage() {
           <div className="spinner" />
           <p>
             {analysisType === 'training'
-              ? 'Analyzing your training data with AI...'
-              : 'Creating personalized diet recommendations...'}
+              ? t('ai.analyzingTraining')
+              : t('ai.analyzingDiet')}
           </p>
-          <p className="text-muted">This may take 10-30 seconds</p>
+          <p className="text-muted">{t('ai.waitHint')}</p>
         </div>
       )}
 
@@ -103,7 +108,7 @@ export default function AIAnalysisPage() {
       {/* Result */}
       {analysisResult && (
         <div className="ai-result">
-          <h2>{analysisType === 'training' ? '🏋️ Training Analysis' : '🥗 Diet Recommendations'}</h2>
+          <h2>{analysisType === 'training' ? t('ai.trainingResult') : t('ai.dietResult')}</h2>
           <div className="markdown-content">
             <ReactMarkdown>{analysisResult}</ReactMarkdown>
           </div>
@@ -115,12 +120,12 @@ export default function AIAnalysisPage() {
         <div className="modal-overlay" onClick={() => setShowHistory(false)}>
           <div className="modal modal-wide" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h2>Analysis History</h2>
+              <h2>{t('ai.analysisHistory')}</h2>
               <button className="btn-close" onClick={() => setShowHistory(false)}>✕</button>
             </div>
             <div className="modal-body">
               {history.length === 0 ? (
-                <p className="text-muted">No analyses yet. Generate your first one!</p>
+                <p className="text-muted">{t('ai.noHistory')}</p>
               ) : (
                 <div className="history-list">
                   {history.map(item => (

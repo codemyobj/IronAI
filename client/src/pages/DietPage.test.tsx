@@ -123,7 +123,7 @@ describe('DietPage', () => {
     setupMock({ loading: true, records: [] })
     render(<DietPage />, { wrapper: MemoryRouter })
 
-    expect(screen.getByText('Loading diet records...')).toBeInTheDocument()
+    expect(document.querySelector('.skeleton')).toBeInTheDocument()
   })
 
   it('shows error message', () => {
