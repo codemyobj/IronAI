@@ -64,7 +64,7 @@ describe('useDiet', () => {
       }
       return Promise.reject(new Error('Unknown URL: ' + url))
     })
-    mockPost.mockImplementation((url: string, data: any) => {
+    mockPost.mockImplementation((_url: string, data: any) => {
       const newRecord = { id: 3, ...data, recorded_at: data.recorded_at || '2026-07-27' }
       return Promise.resolve({ data: { record: newRecord } })
     })
