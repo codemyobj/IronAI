@@ -6,8 +6,7 @@
   "scripts": {
     "dev:server": "pnpm --filter server dev",
     "dev:client": "pnpm --filter client dev",
-    "build:client": "pnpm --filter client build",
-    "vercel-build": "pnpm install && pnpm --filter client build"
+    "build:client": "pnpm --filter client build"
   },
   "devDependencies": {
     "vercel": "^54.20.1"
