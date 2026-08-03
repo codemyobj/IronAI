@@ -1,7 +1,7 @@
 {
-  "buildCommand": "pnpm --filter client build",
+  "buildCommand": "cd client && npm run build",
   "outputDirectory": "client/dist",
-  "installCommand": "pnpm install --frozen-lockfile",
+  "installCommand": "cd server && npm install && cd ../client && npm install",
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api" },
     { "source": "/((?!api).*)", "destination": "/index.html" }

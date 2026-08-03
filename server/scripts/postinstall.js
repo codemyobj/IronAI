@@ -11,8 +11,14 @@ if (!env.DATABASE_URL) {
   console.log('[postinstall] DATABASE_URL not set, using placeholder for prisma generate')
 }
 
+// 检测可用的包管理器
+const { existsSync } = require('fs')
+const isPnpm = existsSync(path.resolve(__dirname, '..', '..', 'pnpm-workspace.yaml'))
+const cmd = isPnpm ? 'pnpm exec prisma generate' : 'npx prisma generate'
+console.log(`[postinstall] Using ${isPnpm ? 'pnpm' : 'npm/npx'} for prisma generate`)
+
 try {
-  execSync('pnpm exec prisma generate', {
+  execSync(cmd, {
     stdio: 'inherit',
     env,
     cwd: path.resolve(__dirname, '..'),
