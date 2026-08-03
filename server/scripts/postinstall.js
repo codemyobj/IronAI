@@ -12,7 +12,7 @@ if (!env.DATABASE_URL) {
 }
 
 try {
-  execSync('npx prisma generate', {
+  execSync('pnpm exec prisma generate', {
     stdio: 'inherit',
     env,
     cwd: path.resolve(__dirname, '..'),
