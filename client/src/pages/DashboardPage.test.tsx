@@ -51,7 +51,6 @@ function setupAuth(user: any = mockUser) {
 }
 
 function setupApiResponses(overrides: Record<string, any> = {}) {
-  const _today = new Date().toISOString().split('T')[0]
   const defaultRecords = [
     { id: 1, calories: 300 },
     { id: 2, calories: 450 },
