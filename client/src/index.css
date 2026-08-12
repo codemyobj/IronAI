@@ -89,7 +89,8 @@ p { margin: 0; }
 .app-layout {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  min-height: 100dvh; /* dynamic viewport height for iOS Safari address bar */
+  min-height: 100vh;  /* fallback for browsers without dvh support */
 }
 
 .main-content {
@@ -97,7 +98,10 @@ p { margin: 0; }
   max-width: 480px;
   width: 100%;
   margin: 0 auto;
-  padding: 24px 20px calc(100px + env(safe-area-inset-bottom)); /* bottom padding for tab bar + safe area */
+  padding-top: calc(24px + env(safe-area-inset-top));
+  padding-left: 20px;
+  padding-right: 20px;
+  padding-bottom: calc(100px + env(safe-area-inset-bottom));
 }
 
 /* ============================================================
@@ -1502,7 +1506,10 @@ p { margin: 0; }
 
 @media (max-width: 480px) {
   .main-content {
-    padding: 20px 16px 100px;
+    padding-top: calc(20px + env(safe-area-inset-top));
+    padding-left: 16px;
+    padding-right: 16px;
+    padding-bottom: calc(100px + env(safe-area-inset-bottom));
   }
 
   .form-row {
