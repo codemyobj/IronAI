@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../hooks/useAuth';
 import { DashboardSkeleton } from '../components/Skeleton';
+import { ChartCard, CalorieTrendChart, TrainingBarChart } from '../components/Charts';
 import apiClient from '../api';
 
 interface DashboardStats {
@@ -16,6 +17,20 @@ interface DashboardStats {
     perceived_effort: number;
     started_at: string;
   }>;
+}
+
+interface DailyBreakdown {
+  recorded_at: string;
+  daily_calories: number;
+  entries: number;
+}
+
+interface TrainingSession {
+  id: number;
+  program_name: string;
+  duration_minutes: number;
+  perceived_effort: number;
+  started_at: string;
 }
 
 function ProgressRing({ value, max }: { value: number; max: number }) {
@@ -41,6 +56,8 @@ export default function DashboardPage() {
   const { t } = useTranslation();
   const { user, logout } = useAuth();
   const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [calorieTrend, setCalorieTrend] = useState<{ date: string; value: number }[]>([]);
+  const [trainingFreq, setTrainingFreq] = useState<{ label: string; value: number }[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -48,11 +65,15 @@ export default function DashboardPage() {
     async function fetchDashboard() {
       try {
         const today = new Date().toISOString().split('T')[0];
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        const weekAgoStr = weekAgo.toISOString().split('T')[0];
 
-        const [programsRes, sessionsRes, dietRes] = await Promise.all([
+        const [programsRes, sessionsRes, dietRes, summaryRes] = await Promise.all([
           apiClient.get('/training/programs'),
           apiClient.get('/training/sessions', { params: { limit: 5 } }),
           apiClient.get('/diet/records', { params: { date: today } }),
+          apiClient.get('/diet/summary', { params: { start: weekAgoStr, end: today } }),
         ]);
 
         const todayCalories = dietRes.data.records.reduce(
@@ -66,6 +87,25 @@ export default function DashboardPage() {
           todayCalories,
           recentSessions: sessionsRes.data.sessions,
         });
+
+        // Calorie trend from daily breakdown
+        const daily: DailyBreakdown[] = summaryRes.data.daily || [];
+        setCalorieTrend(
+          daily.map(d => ({
+            date: d.recorded_at,
+            value: Number(d.daily_calories) || 0,
+          }))
+        );
+
+        // Training frequency by weekday (from recent sessions)
+        const sessions: TrainingSession[] = sessionsRes.data.sessions || [];
+        const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const freqMap = new Array(7).fill(0);
+        sessions.forEach(s => {
+          const day = new Date(s.started_at).getDay();
+          freqMap[day]++;
+        });
+        setTrainingFreq(weekdays.map((label, i) => ({ label, value: freqMap[i] })));
       } catch (err: any) {
         setError(err.response?.data?.error || t('common.loadDashboard'));
       } finally {
@@ -128,6 +168,18 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* Charts */}
+      {calorieTrend.length > 0 && (
+        <ChartCard title={t('dashboard.calorieTrend')}>
+          <CalorieTrendChart data={calorieTrend} />
+        </ChartCard>
+      )}
+      {trainingFreq.some(d => d.value > 0) && (
+        <ChartCard title={t('dashboard.trainingFrequency')}>
+          <TrainingBarChart data={trainingFreq} />
+        </ChartCard>
+      )}
 
       <div className="dashboard-sections">
         <div className="dashboard-section">

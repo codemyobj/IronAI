@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useDiet } from '../hooks/useDiet';
 import { useTranslation } from 'react-i18next';
 import { DietSkeleton } from '../components/Skeleton';
+import { ChartCard, CalorieTrendChart, MacroPieChart } from '../components/Charts';
 
 const MEAL_TYPES = ['breakfast', 'lunch', 'dinner', 'snack'] as const;
 
@@ -157,6 +158,31 @@ export default function DietPage() {
           <span className="macro-value">{Number(todayTotals.fat).toFixed(1)}g</span>
           <span className="macro-label">{t('diet.fat')}</span>
         </div>
+      </div>
+
+      {/* Charts */}
+      <div className="charts-grid">
+        {todayTotals.protein + todayTotals.carbs + todayTotals.fat > 0 && (
+          <ChartCard title={t('diet.macroDistribution')}>
+            <MacroPieChart
+              data={[
+                { name: t('diet.protein'), value: Number(todayTotals.protein.toFixed(1)) },
+                { name: t('diet.carbs'), value: Number(todayTotals.carbs.toFixed(1)) },
+                { name: t('diet.fat'), value: Number(todayTotals.fat.toFixed(1)) },
+              ]}
+            />
+          </ChartCard>
+        )}
+        {dailyBreakdown.length > 0 && (
+          <ChartCard title={t('diet.calorieTrend')}>
+            <CalorieTrendChart
+              data={dailyBreakdown.map(d => ({
+                date: d.recorded_at,
+                value: Number(d.daily_calories) || 0,
+              }))}
+            />
+          </ChartCard>
+        )}
       </div>
 
       {/* Meal Type Groups */}

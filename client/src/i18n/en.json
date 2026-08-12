@@ -57,7 +57,9 @@
     "logMeal": "Log Meal",
     "startSession": "Start Session",
     "aiAnalysis": "AI Analysis",
-    "noSessions": "No training sessions yet. Start your first workout!"
+    "noSessions": "No training sessions yet. Start your first workout!",
+    "calorieTrend": "Calorie Trend (7 days)",
+    "trainingFrequency": "Training Frequency"
   },
   "training": {
     "title": "Training Programs",
@@ -100,7 +102,9 @@
     "restLabel": "Rest: {{rest}}s",
     "beginner": "Beginner",
     "intermediate": "Intermediate",
-    "advanced": "Advanced"
+    "advanced": "Advanced",
+    "durationTrend": "Training Duration",
+    "muscleGroupDistribution": "Muscle Group Distribution"
   },
   "diet": {
     "title": "Diet Tracker",
@@ -131,7 +135,9 @@
     "weeklyOverview": "This Week's Overview",
     "weeklyAvg": "Weekly avg: {{avg}} kcal/day",
     "totalProtein": "Total protein: {{protein}}g",
-    "total": "Total"
+    "total": "Total",
+    "macroDistribution": "Macro Distribution",
+    "calorieTrend": "Calorie Trend"
   },
   "ai": {
     "title": "AI Coach",

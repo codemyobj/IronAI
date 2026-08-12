@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useTraining } from '../hooks/useTraining';
 import { TrainingSkeleton } from '../components/Skeleton';
+import { ChartCard, TrainingBarChart, MuscleGroupChart } from '../components/Charts';
 import type { TrainingProgram, Exercise } from '../types';
 
 const DIFFICULTIES = ['beginner', 'intermediate', 'advanced'] as const;
@@ -228,6 +229,34 @@ export default function TrainingPage() {
           ))}
         </div>
       )}
+
+      {/* Charts */}
+      <div className="charts-grid">
+        {sessions.length > 0 && (
+          <ChartCard title={t('training.durationTrend')}>
+            <TrainingBarChart
+              data={sessions.slice(0, 10).reverse().map((s: any) => ({
+                label: new Date(s.started_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+                value: s.duration_minutes || 0,
+              }))}
+              color="#8b5cf6"
+            />
+          </ChartCard>
+        )}
+        {programs.length > 0 && (() => {
+          const groupMap: Record<string, number> = {}
+          programs.forEach(p => {
+            const g = p.target_muscle_group || 'Other'
+            groupMap[g] = (groupMap[g] || 0) + 1
+          })
+          const data = Object.entries(groupMap).map(([label, value]) => ({ label, value }))
+          return (
+            <ChartCard title={t('training.muscleGroupDistribution')}>
+              <MuscleGroupChart data={data} />
+            </ChartCard>
+          )
+        })()}
+      </div>
 
       {/* Program Detail Modal */}
       {programDetail && (

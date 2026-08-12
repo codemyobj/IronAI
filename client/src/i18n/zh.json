@@ -57,7 +57,9 @@
     "logMeal": "记录饮食",
     "startSession": "开始训练",
     "aiAnalysis": "AI分析",
-    "noSessions": "暂无训练记录。开始您的第一次锻炼！"
+    "noSessions": "暂无训练记录。开始您的第一次锻炼！",
+    "calorieTrend": "卡路里趋势（7天）",
+    "trainingFrequency": "训练频率"
   },
   "training": {
     "title": "训练计划",
@@ -100,7 +102,9 @@
     "restLabel": "休息: {{rest}}秒",
     "beginner": "初级",
     "intermediate": "中级",
-    "advanced": "高级"
+    "advanced": "高级",
+    "durationTrend": "训练时长",
+    "muscleGroupDistribution": "肌群分布"
   },
   "diet": {
     "title": "饮食追踪",
@@ -131,7 +135,9 @@
     "weeklyOverview": "本周概览",
     "weeklyAvg": "周均: {{avg}} 卡路里/天",
     "totalProtein": "总蛋白质: {{protein}}g",
-    "total": "总计"
+    "total": "总计",
+    "macroDistribution": "宏量营养素分布",
+    "calorieTrend": "卡路里趋势"
   },
   "ai": {
     "title": "AI 教练",
