@@ -10,6 +10,7 @@
 | [backend-implementation.md](./backend-implementation.md) | 后端实现文档 — Express 架构、Prisma ORM、控制器、AI 服务、Vercel 部署等实现细节 | ✅ 最新 |
 | [feature-roadmap.md](./feature-roadmap.md) | 功能规划 — 未来可扩展的功能方向、优先级分层、技术实现建议 | ✅ 最新 |
 | [DEPLOY.md](./DEPLOY.md) | 部署指南 — Vercel + Supabase 部署流程、环境变量配置、常见问题排查 | ✅ 最新 |
+| [issue-42p05-prisma-pgbouncer.md](./issue-42p05-prisma-pgbouncer.md) | 故障记录 — Prisma + PgBouncer `42P05 prepared statement` 冲突的根因分析与修复 | ✅ 故障归档 |
 | [PROJECT_PLAN.md](./PROJECT_PLAN.md) | 项目计划 — 完整的产品设计、技术架构、功能模块规划（初版学习计划） | 📜 历史文档 |
 | [prisma-migration-plan.md](./prisma-migration-plan.md) | Prisma 迁移方案 — 从 pg (node-postgres) 迁移到 Prisma ORM 的实施记录 | ✅ 已完成 |
 
