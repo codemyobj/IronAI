@@ -47,10 +47,12 @@ client/
 │   ├── icon-192.png         # PWA 图标 192x192
 │   ├── icon-512.png         # PWA 图标 512x512
 │   ├── app-icon.svg         # 应用图标 SVG
+│   ├── icons.svg            # 图标集合 SVG
 │   └── favicon.svg          # 浏览器标签页图标
 ├── src/
 │   ├── api/
 │   │   └── index.ts         # axios 实例与拦截器
+│   ├── assets/              # 静态图片资源
 │   ├── components/
 │   │   ├── Layout.tsx       # 应用主布局（Navbar + Outlet）
 │   │   ├── Navbar.tsx       # 底部 Tab 导航
@@ -85,8 +87,10 @@ client/
 ├── index.html               # HTML 模板（含 PWA meta 标签）
 ├── vite.config.ts           # Vite 构建配置
 ├── vitest.config.ts         # Vitest 测试配置
-├── tsconfig.json            # TypeScript 根配置
-├── tsconfig.app.json        # 应用代码 TS 配置
+├── eslint.config.js         # ESLint 配置（扁平化格式）
+├── .oxlintrc.json           # oxlint 配置（备用 linter）
+├── tsconfig.json            # TypeScript 根配置（项目引用）
+├── tsconfig.app.json        # 应用代码 TS 配置（src/）
 └── tsconfig.node.json       # Node 端 TS 配置（vite.config.ts）
 ```
 

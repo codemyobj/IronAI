@@ -135,17 +135,26 @@ const PORT = process.env.PORT || 3000
 
 const server = app.listen(PORT, () => {
   console.log(`🚀 IronAI server running on http://localhost:${PORT}`)
+  console.log(`📋 Health check: http://localhost:${PORT}/api/health`)
+})
+
+server.on('error', (err) => {
+  console.error('Server error:', err)
 })
 
 process.on('uncaughtException', (err) => {
   console.error('Uncaught exception:', err)
   process.exit(1)
 })
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled rejection:', reason)
+})
 ```
 
 - 调用 `app.listen()` 启动 HTTP 服务器
-- 监听 `uncaughtException` 与 `unhandledRejection`，避免静默崩溃
-- 默认端口 3000（可通过 `PORT` 环境变量覆盖）
+- 监听 `server.on('error')`、`uncaughtException`、`unhandledRejection`，避免静默崩溃
+- 默认端口 3000，**本项目 `server/.env` 配置为 `PORT=8080`**（与 [client/vite.config.ts](file:///d:/学习/全栈/projects/web端/IronAI/client/vite.config.ts) 的 proxy 目标一致）
 
 ### 3. Vercel Serverless 入口 — [api/index.ts](file:///d:/学习/全栈/projects/web端/IronAI/api/index.ts)
 
@@ -207,30 +216,64 @@ GET /api/health
 ```typescript
 import { PrismaClient } from '@prisma/client'
 
+// -----------------------------------------------------------
+// PrismaClient 单例
+// -----------------------------------------------------------
+// - 使用 globalThis 避免 Vercel 热启动（HMR）重复实例化
+// - 使用 Supabase 连接池（PgBouncer Transaction Pooling）时必须
+//   关闭 named prepared statement 缓存，否则会出现
+//   "prepared statement sX already exists" 错误。
+//   这里通过构造参数 datasources.db.url + 运行时 URL 规范化做双重保险。
+// -----------------------------------------------------------
+
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
 }
 
+function normalizeDatabaseUrl(rawUrl: string | undefined): string | undefined {
+  if (!rawUrl) return rawUrl
+  try {
+    const u = new URL(rawUrl)
+    u.searchParams.set('pgbouncer', 'true')
+    u.searchParams.set('statement_cache_size', '0') // 关键：关闭命名 prepared statement 缓存
+    if (!u.searchParams.has('connection_limit'))  u.searchParams.set('connection_limit', '1')
+    if (!u.searchParams.has('pool_timeout'))      u.searchParams.set('pool_timeout', '15')
+    if (!u.searchParams.has('connect_timeout'))   u.searchParams.set('connect_timeout', '15')
+    return u.toString()
+  } catch {
+    return rawUrl
+  }
+}
+
+const isDev = process.env.NODE_ENV !== 'production'
+
 const prisma =
   globalForPrisma.prisma ??
   new PrismaClient({
-    log: process.env.NODE_ENV === 'development'
-      ? ['warn', 'error']
-      : ['error'],
+    datasources: {
+      db: { url: normalizeDatabaseUrl(process.env.DATABASE_URL) },
+    },
+    log: isDev ? ['warn', 'error'] : ['error'],
   })
 
-if (process.env.NODE_ENV !== 'production') {
-  globalForPrisma.prisma = prisma
-}
+if (isDev) globalForPrisma.prisma = prisma
 
 export default prisma
 ```
 
 **为什么用单例？**
 - Vercel Serverless 函数在热启动时可能保留 Node.js 进程状态
-- 若每次请求都 `new PrismaClient()`，会导致连接池爆炸（每次实例化约打开 10 个连接）
+- 若每次请求都 `new PrismaClient()`，会导致连接池爆炸（每个实例默认打开多条连接）
 - 通过 `globalThis` 缓存单例，热启动时复用已有实例
 - 开发环境打印 `warn` + `error` 日志，生产环境只打印 `error`
+
+**为什么要规范化 `DATABASE_URL`？**
+- Supabase 的 Transaction Pooler（PgBouncer）不支持 named prepared statement 缓存跨越事务
+- Vercel Serverless 请求之间 PgBouncer 会把不同的底层 PG 连接分配给同一个 Prisma Client，
+  当 Prisma 带着"已缓存的 s1/s2/s3 名称"重新 `PREPARE` 时会报 `42P05 prepared statement "sX" already exists`
+- 通过显式追加 `statement_cache_size=0`，强制 Prisma 使用匿名（unnamed）prepared statement，
+  每次执行都重新解析，从而在任意 PgBouncer 连接上都不会冲突
+- 即使用户在 Vercel env 里没带上这些参数，代码层也会自动补齐（双保险）
 
 ### 数据模型 — [prisma/schema.prisma](file:///d:/学习/全栈/projects/web端/IronAI/server/prisma/schema.prisma)
 
@@ -963,8 +1006,10 @@ export function formatDate(d: Date): string {
 ### 本地开发（`server/.env`）
 
 ```env
-# 数据库连接（Supabase 连接池地址，端口 6543）
-DATABASE_URL=postgresql://postgres.xxxx:password@aws-0-us-east-1.pooler.supabase.com:6543/postgres
+# 数据库连接（Supabase Transaction Pooler，端口 6543）
+# 必须包含以下 5 个参数，否则 Vercel + PgBouncer 环境下会报错：
+#  42P05 prepared statement "sX" already exists
+DATABASE_URL=postgresql://postgres.xxxx:password@aws-0-us-east-1.pooler.supabase.com:6543/postgres?pgbouncer=true&statement_cache_size=0&connection_limit=1&connect_timeout=15&pool_timeout=15
 
 # JWT 密钥（任意随机字符串）
 JWT_SECRET=your-random-secret-key
@@ -975,9 +1020,11 @@ DEEPSEEK_API_KEY=sk-xxxxxxxxxxxx
 # 可选：跨域白名单
 ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000
 
-# 可选：端口
-PORT=3000
+# 可选：端口（默认 3000，本项目配置为 8080）
+PORT=8080
 ```
+
+> 💡 若在本地或 env 中遗漏了查询参数，[server/src/config/prisma.ts](file:///d:/学习/全栈/projects/web端/IronAI/server/src/config/prisma.ts) 中的 `normalizeDatabaseUrl()` 会在 PrismaClient 构造时自动补齐 `pgbouncer=true`、`statement_cache_size=0` 等参数，作为双保险。
 
 ### Vercel 环境变量
 

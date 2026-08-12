@@ -1,5 +1,19 @@
 # IronAI — Workout & Diet AI App: Complete Learning Plan
 
+> 📜 **历史文档说明**
+>
+> 本文档是项目初版的学习计划，记录了项目从零开始的设计思路与学习路径。
+>
+> **注意**：文档中的部分技术选型已在项目演进中调整：
+> - 数据库：MySQL → **PostgreSQL（Supabase）**
+> - ORM：mysql2 直接 SQL → **Prisma 5.22**
+> - 部署：已上线 **Vercel + Supabase**
+>
+> 如需了解当前实际架构，请参考：
+> - [frontend-implementation.md](./frontend-implementation.md) — 前端实现
+> - [backend-implementation.md](./backend-implementation.md) — 后端实现
+> - [DEPLOY.md](./DEPLOY.md) — 部署指南
+
 ## 🎯 What You'll Build
 
 A full-stack fitness app where users can log in, manage training programs, track diet, and get AI-powered analysis & diet recommendations.

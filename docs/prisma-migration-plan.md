@@ -1,5 +1,20 @@
 # Prisma ORM 迁移计划：pg → Prisma
 
+> ✅ **迁移状态：已完成**
+>
+> 本文档记录了从 `pg`（node-postgres）迁移到 Prisma ORM 的完整实施过程。
+> 迁移已于 2026-08 完成，所有控制器已切换到 Prisma Client，`server/src/config/db.ts` 已删除。
+>
+> **当前状态**：
+> - ✅ `server/prisma/schema.prisma` 已创建并与数据库精确对齐
+> - ✅ `server/src/config/prisma.ts` PrismaClient 单例已就位
+> - ✅ 4 个 controller（auth/diet/training/ai）全部迁移到 Prisma 查询
+> - ✅ `server/src/types/index.ts` 行类型已从 Prisma 派生
+> - ✅ `server/scripts/postinstall.js` 自动生成 Prisma Client
+> - ✅ Vercel 部署已验证 Prisma Client 正常生成与运行
+>
+> 本文档保留作为历史参考，记录迁移决策与模式对照。如需了解当前后端实现细节，请参考 [backend-implementation.md](./backend-implementation.md)。
+
 ## Context
 
 后端当前使用 `pg`（node-postgres）直接编写 SQL，存在类型安全缺失、NUMERIC 类型需手动解析、批量插入需手工拼接占位符等问题。迁移到 Prisma ORM 后可获得：强类型查询、自动关系映射、聚合 API、更好的 IDE 支持。
