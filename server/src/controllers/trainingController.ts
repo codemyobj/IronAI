@@ -2,6 +2,7 @@ import { Response } from 'express'
 import prisma from '../config/prisma'
 import { AuthRequest } from '../middleware/auth'
 import { CreateProgramBody, CreateSessionBody } from '../types'
+import { invalidateDashboardCache } from './dashboardController'
 
 export const getPrograms = async (req: AuthRequest, res: Response) => {
   try {
@@ -73,6 +74,7 @@ export const createProgram = async (req: AuthRequest, res: Response) => {
       },
     })
 
+    invalidateDashboardCache(req.userId!)
     res.status(201).json({ program })
   } catch (err) {
     console.error('Create program error:', err)
@@ -103,6 +105,7 @@ export const updateProgram = async (req: AuthRequest, res: Response) => {
         target_muscle_group: target_muscle_group ?? null,
       },
     })
+    invalidateDashboardCache(req.userId!)
     res.json({ program: updated })
   } catch (err) {
     console.error('Update program error:', err)
@@ -129,6 +132,7 @@ export const deleteProgram = async (req: AuthRequest, res: Response) => {
       data: { is_active: false },
     })
 
+    invalidateDashboardCache(req.userId!)
     res.json({ message: 'Program deleted' })
   } catch (err) {
     console.error('Delete program error:', err)
@@ -257,6 +261,7 @@ export const logSession = async (req: AuthRequest, res: Response) => {
       },
     })
 
+    invalidateDashboardCache(req.userId!)
     res.status(201).json({ session })
   } catch (err) {
     console.error('Log session error:', err)

@@ -6,6 +6,7 @@
 
 | 文档 | 说明 | 状态 |
 |------|------|------|
+| [PRD.md](./PRD.md) | 产品需求文档 — 产品概述、功能架构、数据模型、API 规范、UI/UX 设计规范、规划功能 | ✅ 最新 |
 | [frontend-implementation.md](./frontend-implementation.md) | 前端实现文档 — 客户端架构、目录结构、Hooks、路由、i18n、PWA、测试等实现细节 | ✅ 最新 |
 | [backend-implementation.md](./backend-implementation.md) | 后端实现文档 — Express 架构、Prisma ORM、控制器、AI 服务、Vercel 部署等实现细节 | ✅ 最新 |
 | [feature-roadmap.md](./feature-roadmap.md) | 功能规划 — 未来可扩展的功能方向、优先级分层、技术实现建议 | ✅ 最新 |

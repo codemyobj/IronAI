@@ -1,11 +1,12 @@
 import { Response } from 'express'
 import prisma from '../config/prisma'
 import { AuthRequest } from '../middleware/auth'
-import { chatCompletion, TRAINING_SYSTEM_PROMPT, DIET_SYSTEM_PROMPT } from '../services/deepseek'
+import { chatCompletion, TRAINING_SYSTEM_PROMPT, DIET_SYSTEM_PROMPT, getLanguageInstruction } from '../services/deepseek'
 import { formatDate } from '../utils/format'
 
 export const trainingAnalysis = async (req: AuthRequest, res: Response) => {
   try {
+    const lang = (req.body as any)?.lang
     const user = await prisma.user.findFirst({
       where: { id: req.userId! },
       select: {
@@ -92,7 +93,8 @@ Please analyze this training data and provide:
 5. **Weekly Plan Suggestion** — Outline a sample week of training that fits this user's goal
 `
 
-    const analysis = await chatCompletion(userPrompt, TRAINING_SYSTEM_PROMPT)
+    const systemPrompt = `${TRAINING_SYSTEM_PROMPT}\n\n${getLanguageInstruction(lang)}`
+    const analysis = await chatCompletion(userPrompt, systemPrompt)
 
     await prisma.aIAnalysis.create({
       data: {
@@ -121,6 +123,7 @@ Please analyze this training data and provide:
 
 export const dietRecommendation = async (req: AuthRequest, res: Response) => {
   try {
+    const lang = (req.body as any)?.lang
     const user = await prisma.user.findFirst({
       where: { id: req.userId! },
       select: {
@@ -216,7 +219,8 @@ Based on the user's profile, fitness goal, and eating patterns, provide:
 5. **3-Day Meal Plan** — A sample 3-day meal plan with specific foods, portions, and macro estimates. Include breakfast, lunch, dinner, and snacks for each day. Tailor to their fitness goal.
 `
 
-    const recommendation = await chatCompletion(userPrompt, DIET_SYSTEM_PROMPT)
+    const systemPrompt = `${DIET_SYSTEM_PROMPT}\n\n${getLanguageInstruction(lang)}`
+    const recommendation = await chatCompletion(userPrompt, systemPrompt)
 
     await prisma.aIAnalysis.create({
       data: {

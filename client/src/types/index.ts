@@ -1,3 +1,5 @@
+export type FitnessGoal = 'general' | 'weight_loss' | 'muscle_gain' | 'endurance'
+
 export interface RegisterData {
     email: string
     password: string
@@ -5,7 +7,7 @@ export interface RegisterData {
     age?: number
     height_cm?: number
     weight_kg?: number
-    fitness_goal?: 'lose_weight' | 'build_muscle' | 'endurance' | 'general'
+    fitness_goal?: FitnessGoal
 }
 
 export interface User {
@@ -15,8 +17,17 @@ export interface User {
     age?: number
     height_cm?: number
     weight_kg?: number
-    fitness_goal?: 'lose_weight' | 'build_muscle' | 'endurance' | 'general'
+    fitness_goal?: FitnessGoal
+    created_at?: string
+    updated_at?: string
 }
+
+export interface ProfileStats {
+    totalTrainingSessions: number
+    totalDietRecords: number
+}
+
+export type UpdateProfileData = Partial<Pick<User, 'name' | 'age' | 'height_cm' | 'weight_kg' | 'fitness_goal'>>
 
 export interface TrainingProgram {
     id: number

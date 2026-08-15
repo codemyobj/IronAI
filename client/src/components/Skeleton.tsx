@@ -3,13 +3,6 @@
 export function DashboardSkeleton() {
   return (
     <div className="dashboard-page">
-      <div className="page-header">
-        <div>
-          <div className="skeleton skeleton-title" />
-          <div className="skeleton skeleton-subtitle" />
-        </div>
-      </div>
-
       <div className="sk-stats">
         <div className="sk-stat-card">
           <div>
@@ -64,15 +57,10 @@ export function DashboardSkeleton() {
 export function TrainingSkeleton() {
   return (
     <div className="training-page">
-      <div className="page-header">
-        <div>
-          <div className="skeleton skeleton-title" />
-          <div className="skeleton skeleton-subtitle" />
-        </div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <div className="skeleton" style={{ width: 120, height: 38, borderRadius: 999 }} />
-          <div className="skeleton" style={{ width: 120, height: 38, borderRadius: 999 }} />
-        </div>
+      <div className="page-actions">
+        <div className="skeleton" style={{ width: 110, height: 38, borderRadius: 999 }} />
+        <div className="skeleton" style={{ width: 120, height: 38, borderRadius: 999 }} />
+        <div className="skeleton" style={{ width: 110, height: 38, borderRadius: 999 }} />
       </div>
 
       <div className="sk-programs">
@@ -90,13 +78,6 @@ export function TrainingSkeleton() {
 export function DietSkeleton() {
   return (
     <div className="diet-page">
-      <div className="page-header">
-        <div>
-          <div className="skeleton skeleton-title" />
-          <div className="skeleton skeleton-subtitle" />
-        </div>
-      </div>
-
       <div className="skeleton sk-date-picker" />
 
       <div className="sk-macros">

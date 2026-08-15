@@ -6,7 +6,7 @@ CREATE TABLE users (
   age INTEGER,
   height_cm NUMERIC(5,1),
   weight_kg NUMERIC(5,1),
-  fitness_goal VARCHAR(50) DEFAULT 'general' CHECK (fitness_goal IN ('lose_weight', 'build_muscle', 'endurance', 'general')),
+  fitness_goal VARCHAR(50) DEFAULT 'general' CHECK (fitness_goal IN ('weight_loss', 'muscle_gain', 'endurance', 'general')),
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );

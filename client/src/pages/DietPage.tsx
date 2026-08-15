@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useDiet } from '../hooks/useDiet';
 import { useTranslation } from 'react-i18next';
+import { useHeader } from '../context/HeaderContext';
 import { DietSkeleton } from '../components/Skeleton';
 import { ChartCard, CalorieTrendChart, MacroPieChart } from '../components/Charts';
 
@@ -20,6 +21,7 @@ export default function DietPage() {
   } = useDiet();
 
   const { t } = useTranslation();
+  const { setHeader, setPageLoading } = useHeader();
 
   // Add food form
   const [showAddForm, setShowAddForm] = useState(false);
@@ -41,6 +43,18 @@ export default function DietPage() {
   };
 
   const todayStr = new Date().toISOString().split('T')[0];
+
+  useEffect(() => {
+    setHeader({
+      title: t('diet.title'),
+    });
+  }, [t, setHeader]);
+
+  useEffect(() => {
+    const isLoading = loading && records.length === 0;
+    setPageLoading(isLoading);
+    return () => setPageLoading(false);
+  }, [loading, records.length, setPageLoading]);
 
   const handleAddRecord = async () => {
     setFormError('');
@@ -112,8 +126,7 @@ export default function DietPage() {
 
   return (
     <div className="diet-page">
-      <div className="page-header">
-        <h1>{t('diet.title')}</h1>
+      <div className="page-actions">
         <button className="btn btn-primary" onClick={() => setShowAddForm(true)}>
           {t('diet.addFood')}
         </button>

@@ -5,7 +5,7 @@
 // ============================================================
 
 import { Router } from 'express'
-import { register, login, getMe } from '../controllers/authController'
+import { register, login, getMe, updateProfile, getProfileStats } from '../controllers/authController'
 import { authMiddleware } from '../middleware/auth'
 
 const router = Router()
@@ -18,5 +18,11 @@ router.post('/login', login)
 
 // GET /api/auth/me — get currently logged-in user (protected)
 router.get('/me', authMiddleware, getMe)
+
+// PUT /api/auth/profile — update profile fields (name, age, height, weight, goal)
+router.put('/profile', authMiddleware, updateProfile)
+
+// GET /api/auth/profile/stats — get aggregated counts for profile dashboard
+router.get('/profile/stats', authMiddleware, getProfileStats)
 
 export default router

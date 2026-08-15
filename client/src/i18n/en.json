@@ -3,7 +3,40 @@
     "home": "Home",
     "train": "Train",
     "diet": "Diet",
-    "ai": "AI"
+    "ai": "AI Coach",
+    "profile": "Profile"
+  },
+  "profile": {
+    "title": "Profile",
+    "welcome": "Personal Info",
+    "settings": "Settings",
+    "language": "Language",
+    "edit": "Edit Profile",
+    "logout": "Log Out",
+    "logoutConfirm": "Are you sure you want to log out?",
+    "switchAccount": "Switch Account",
+    "switchAccountConfirm": "Are you sure you want to switch account? You'll be redirected to the login page.",
+    "name": "Name",
+    "email": "Email",
+    "age": "Age",
+    "height": "Height (cm)",
+    "weight": "Weight (kg)",
+    "goal": "Fitness Goal",
+    "goals": {
+      "general": "General Fitness",
+      "weight_loss": "Weight Loss",
+      "muscle_gain": "Muscle Gain",
+      "endurance": "Endurance"
+    },
+    "memberSince": "Member Since",
+    "sessionsTotal": "Training Sessions",
+    "sessionsUnit": "total",
+    "recordsTotal": "Diet Records",
+    "recordsUnit": "total",
+    "save": "Save",
+    "cancel": "Cancel",
+    "saved": "Profile updated",
+    "saveFailed": "Failed to update profile"
   },
   "auth": {
     "login": {
@@ -184,6 +217,7 @@
     "addFoodFailed": "Failed to add food",
     "confirmDeleteProgram": "Delete this training program? This cannot be undone.",
     "confirmDeleteExercise": "Remove this exercise?",
-    "confirmDeleteFood": "Delete this food entry?"
+    "confirmDeleteFood": "Delete this food entry?",
+    "friend": "Friend"
   }
 }

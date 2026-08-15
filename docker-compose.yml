@@ -1,0 +1,58 @@
+# ============================================================
+# IronAI — 本地开发数据库
+# ------------------------------------------------------------
+# 用途：本地开发用的 PostgreSQL 15，让所有 DB 查询 <10ms。
+#       生产环境（Vercel）走 Supabase，不使用这个文件。
+#
+# 用法（先确认 Docker Desktop 已启动）：
+#   1. 启动本地 PostgreSQL + 自动建库 + 同步 Supabase 远程数据
+#        pnpm db:up        (在项目根目录运行)
+#
+#   2. 之后每次开机都要执行一次（或在 Docker Desktop 里直接启动）
+#        pnpm db:up
+#
+#   3. 停止容器（不删数据）
+#        pnpm db:down
+#
+#   4. 彻底重置（会删除本地所有数据）
+#        pnpm db:reset
+#
+# 连接信息（与 server/.env 中 LOCAL_DATABASE_URL 一致）：
+#   Host:   localhost
+#   Port:   5432
+#   User:   ironai
+#   Pass:   ironai
+#   DB:     ironai
+# ============================================================
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: ironai-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER:     ironai
+      POSTGRES_PASSWORD: ironai
+      POSTGRES_DB:       ironai
+      TZ:                Asia/Shanghai
+      PGTZ:              Asia/Shanghai
+    volumes:
+      # 数据持久化：容器重建不丢数据
+      - ironai_pgdata:/var/lib/postgresql/data
+      # 启动时自动执行的 SQL（首次启动，按字母顺序）
+      - ./server/src/database/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+      - ./server/scripts/seed-demo.sql:/docker-entrypoint-initdb.d/02_seed.sql:ro
+    healthcheck:
+      # CMD 数组形式：参数分开传，避免 Windows/Docker Desktop + busybox sh
+      # 把整条字符串当成 shell 命令解析时出现的引号转义 bug。
+      test:     ["CMD", "pg_isready", "-U", "ironai", "-d", "ironai"]
+      interval: 3s
+      timeout:  3s
+      retries:  20
+      start_period: 5s
+
+volumes:
+  ironai_pgdata:
+    name: ironai_pgdata

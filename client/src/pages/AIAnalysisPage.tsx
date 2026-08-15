@@ -1,17 +1,36 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { useTranslation } from 'react-i18next';
+import { useHeader } from '../context/HeaderContext';
 import apiClient from '../api';
 import type { AIAnalysis } from '../types';
 
 export default function AIAnalysisPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const { setHeader } = useHeader();
   const [analysisResult, setAnalysisResult] = useState('');
   const [analysisType, setAnalysisType] = useState<'training' | 'diet'>('training');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [history, setHistory] = useState<AIAnalysis[]>([]);
   const [showHistory, setShowHistory] = useState(false);
+
+  const loadHistory = async () => {
+    try {
+      const res = await apiClient.get('/ai/history');
+      setHistory(res.data.analyses);
+      setShowHistory(true);
+    } catch (err: any) {
+      setError(err.response?.data?.error || t('ai.loadHistoryFailed'));
+    }
+  };
+
+  useEffect(() => {
+    setHeader({
+      title: t('ai.title'),
+      subtitle: t('ai.description'),
+    });
+  }, [t, setHeader]);
 
   const handleAnalysis = async (type: 'training' | 'diet') => {
     setLoading(true);
@@ -21,7 +40,8 @@ export default function AIAnalysisPage() {
 
     try {
       const endpoint = type === 'training' ? '/ai/training-analysis' : '/ai/diet-recommendation';
-      const res = await apiClient.post(endpoint);
+      const lang = i18n.language?.split('-')[0] || 'en';
+      const res = await apiClient.post(endpoint, { lang });
       const result = type === 'training' ? res.data.analysis : res.data.recommendation;
       setAnalysisResult(result);
     } catch (err: any) {
@@ -35,30 +55,15 @@ export default function AIAnalysisPage() {
     }
   };
 
-  const loadHistory = async () => {
-    try {
-      const res = await apiClient.get('/ai/history');
-      setHistory(res.data.analyses);
-      setShowHistory(true);
-    } catch (err: any) {
-      setError(err.response?.data?.error || t('ai.loadHistoryFailed'));
-    }
-  };
-
   const getTypeLabel = (type: string) => type === 'training' ? t('ai.training') : t('ai.diet');
 
   return (
     <div className="ai-page">
-      <div className="page-header">
-        <h1>{t('ai.title')}</h1>
+      <div className="page-actions">
         <button className="btn btn-outline" onClick={loadHistory}>
           {t('ai.history')}
         </button>
       </div>
-
-      <p className="text-muted">
-        {t('ai.description')}
-      </p>
 
       {/* Action Buttons */}
       <div className="ai-actions">

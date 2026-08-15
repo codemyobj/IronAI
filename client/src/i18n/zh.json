@@ -3,7 +3,40 @@
     "home": "首页",
     "train": "训练",
     "diet": "饮食",
-    "ai": "AI"
+    "ai": "AI教练",
+    "profile": "我的"
+  },
+  "profile": {
+    "title": "我的",
+    "welcome": "个人信息",
+    "settings": "设置",
+    "language": "语言",
+    "edit": "编辑资料",
+    "logout": "退出登录",
+    "logoutConfirm": "确定要退出登录吗？",
+    "switchAccount": "切换账号",
+    "switchAccountConfirm": "确定要切换账号吗？将跳转到登录页。",
+    "name": "姓名",
+    "email": "邮箱",
+    "age": "年龄",
+    "height": "身高 (cm)",
+    "weight": "体重 (kg)",
+    "goal": "健身目标",
+    "goals": {
+      "general": "通用健身",
+      "weight_loss": "减脂",
+      "muscle_gain": "增肌",
+      "endurance": "耐力"
+    },
+    "memberSince": "加入时间",
+    "sessionsTotal": "累计训练",
+    "sessionsUnit": "次",
+    "recordsTotal": "累计饮食记录",
+    "recordsUnit": "条",
+    "save": "保存",
+    "cancel": "取消",
+    "saved": "保存成功",
+    "saveFailed": "保存失败"
   },
   "auth": {
     "login": {
@@ -184,6 +217,7 @@
     "addFoodFailed": "添加食物失败",
     "confirmDeleteProgram": "删除此训练计划？此操作不可撤销。",
     "confirmDeleteExercise": "移除此练习？",
-    "confirmDeleteFood": "删除此食物记录？"
+    "confirmDeleteFood": "删除此食物记录？",
+    "friend": "朋友"
   }
 }

@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import prisma from '../config/prisma'
 import { RegisterBody, LoginBody, SafeUser } from '../types'
+import { invalidateDashboardCache } from './dashboardController'
 
 function toSafeUser(user: any): SafeUser {
   const { password_hash, ...safe } = user
@@ -112,6 +113,86 @@ export const getMe = async (req: Request, res: Response) => {
     res.json({ user: toSafeUser(user) })
   } catch (err) {
     console.error('GetMe error:', err)
+    res.status(500).json({ error: 'Internal server error' })
+  }
+}
+
+const VALID_GOALS = ['general', 'weight_loss', 'muscle_gain', 'endurance']
+
+export const updateProfile = async (req: Request, res: Response) => {
+  try {
+    const authReq = req as any
+    const userId = authReq.userId
+    const body = req.body as any
+
+    // Whitelist of allowed fields (prevent email/password changing here)
+    const allowedFields = [
+      'name', 'age', 'height_cm', 'weight_kg', 'fitness_goal',
+    ]
+
+    const data: Record<string, any> = {}
+    for (const key of allowedFields) {
+      if (body[key] !== undefined) {
+        data[key] = body[key] === '' ? null : body[key]
+      }
+    }
+
+    // Validate fitness_goal if provided
+    if (data.fitness_goal && !VALID_GOALS.includes(data.fitness_goal)) {
+      res.status(400).json({ error: `Invalid fitness_goal. Must be one of: ${VALID_GOALS.join(', ')}` })
+      return
+    }
+
+    // Validate age/height/weight are positive numbers if provided
+    for (const numericKey of ['age', 'height_cm', 'weight_kg']) {
+      if (data[numericKey] !== null && data[numericKey] !== undefined) {
+        const v = Number(data[numericKey])
+        if (isNaN(v) || v <= 0) {
+          res.status(400).json({ error: `${numericKey} must be a positive number` })
+          return
+        }
+        data[numericKey] = v
+      }
+    }
+
+    if (Object.keys(data).length === 0) {
+      res.status(400).json({ error: 'No valid fields to update' })
+      return
+    }
+
+    const updated = await prisma.user.update({
+      where: { id: userId },
+      data,
+    })
+
+    invalidateDashboardCache(userId)
+    res.json({ user: toSafeUser(updated) })
+  } catch (err: any) {
+    console.error('updateProfile error:', err)
+    if (err.code === 'P2002') {
+      res.status(409).json({ error: 'Email already exists' })
+      return
+    }
+    res.status(500).json({ error: 'Internal server error' })
+  }
+}
+
+export const getProfileStats = async (req: Request, res: Response) => {
+  try {
+    const authReq = req as any
+    const userId = authReq.userId
+
+    const [sessionCount, dietRecordCount] = await Promise.all([
+      prisma.trainingSession.count({ where: { user_id: userId } }),
+      prisma.dietRecord.count({ where: { user_id: userId } }),
+    ])
+
+    res.json({
+      totalTrainingSessions: sessionCount,
+      totalDietRecords: dietRecordCount,
+    })
+  } catch (err) {
+    console.error('getProfileStats error:', err)
     res.status(500).json({ error: 'Internal server error' })
   }
 }

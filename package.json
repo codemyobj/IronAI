@@ -6,7 +6,12 @@
   "scripts": {
     "dev:server": "pnpm --filter server dev",
     "dev:client": "pnpm --filter client dev",
-    "build:client": "pnpm --filter client build"
+    "build:client": "pnpm --filter client build",
+    "db:up":        "docker compose up -d postgres && node -e \"const {execSync}=require('child_process');const cmd=['docker','compose','exec','-T','postgres','pg_isready','-U','ironai','-d','ironai'];for(let i=0;i<40;i++){try{execSync(cmd.join(' '),{stdio:'ignore'});console.log('✅ 本地 PostgreSQL 已就绪 (localhost:5432, user=ironai, db=ironai)');process.exit(0);}catch(e){}console.log('等待 PostgreSQL 就绪... '+(i+1)+'/40');Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,1000);}console.error('❌ PostgreSQL 启动超时');process.exit(2);\"",
+    "db:down":      "docker compose down",
+    "db:logs":      "docker compose logs -f postgres",
+    "db:reset":     "docker compose down -v && echo '已删除本地数据卷' && pnpm db:up",
+    "db:sync":      "pnpm --filter server run db:sync-from-supabase"
   },
   "devDependencies": {
     "vercel": "^54.20.1"

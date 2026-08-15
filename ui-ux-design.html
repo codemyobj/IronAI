@@ -1,0 +1,2164 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IronAI — UI/UX Design System</title>
+<style>
+/* ============================================================
+   Design System Showcase — IronAI
+   ============================================================ */
+:root {
+  /* Brand — vibrant emerald */
+  --primary: #10b981;
+  --primary-hover: #059669;
+  --primary-light: #ecfdf5;
+  --primary-soft: rgba(16, 185, 129, 0.1);
+
+  /* Accent */
+  --accent-purple: #8b5cf6;
+  --accent-blue: #3b82f6;
+  --accent-orange: #f97316;
+
+  /* Neutrals */
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --surface-hover: #f1f5f9;
+  --border: #e2e8f0;
+  --border-light: #f1f5f9;
+
+  /* Text */
+  --text: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+
+  /* Semantic */
+  --danger: #ef4444;
+  --danger-soft: #fef2f2;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --warning-soft: #fffbeb;
+  --info: #3b82f6;
+  --info-soft: #eff6ff;
+
+  /* Radii */
+  --radius-sm: 10px;
+  --radius: 16px;
+  --radius-lg: 20px;
+  --radius-xl: 24px;
+  --radius-full: 999px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
+  --shadow-brand: 0 4px 14px rgba(16, 185, 129, 0.3);
+
+  --sans: 'Inter', -apple-system, system-ui, 'Segoe UI', Roboto, sans-serif;
+  --mono: ui-monospace, 'Cascadia Code', Consolas, monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* --- Page Layout --- */
+.design-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 48px 24px 80px;
+}
+
+/* --- Header --- */
+.design-header {
+  text-align: center;
+  margin-bottom: 56px;
+}
+.design-header h1 {
+  font-size: 36px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin-bottom: 8px;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--accent-purple) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.design-header p {
+  color: var(--text-secondary);
+  font-size: 16px;
+}
+
+/* --- Section --- */
+.section {
+  margin-bottom: 56px;
+}
+.section-title {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-title .num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: var(--primary);
+  color: #fff;
+  border-radius: 50%;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* --- Color Palette --- */
+.color-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+}
+.color-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+.color-swatch {
+  height: 80px;
+  display: flex;
+  align-items: flex-end;
+  padding: 8px 12px;
+}
+.color-swatch span {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+.color-info {
+  padding: 10px 14px;
+}
+.color-info strong {
+  font-size: 13px;
+  display: block;
+  margin-bottom: 2px;
+}
+.color-info code {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: var(--mono);
+}
+
+/* --- Typography --- */
+.type-list {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+}
+.type-row {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-light);
+}
+.type-row:last-child { border-bottom: none; }
+.type-label {
+  width: 120px;
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+.type-sample { flex: 1; }
+
+/* --- Component Showcase --- */
+.component-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+.component-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+}
+.component-card h4 {
+  font-size: 14px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 16px;
+}
+
+/* --- Buttons --- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  border-radius: var(--radius-full);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+  box-shadow: var(--shadow-brand);
+}
+.btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
+.btn-outline { background: var(--surface); color: var(--text); border-color: var(--border); }
+.btn-outline:hover { background: var(--surface-hover); }
+.btn-ghost { background: transparent; color: var(--text-secondary); }
+.btn-ghost:hover { background: var(--surface-hover); color: var(--text); }
+.btn-danger { background: transparent; color: var(--danger); border-color: var(--border); }
+.btn-danger:hover { background: var(--danger-soft); border-color: var(--danger); }
+.btn-sm { padding: 6px 14px; font-size: 13px; }
+.btn-full { width: 100%; justify-content: center; padding: 14px; font-size: 15px; }
+.btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
+
+/* --- Form Elements --- */
+.form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.form-group label { font-size: 14px; font-weight: 600; }
+.form-group input, .form-group select {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-family: inherit;
+  color: var(--text);
+  background: var(--surface);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.form-group input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px var(--primary-soft);
+}
+
+/* --- Badges --- */
+.badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+.badge-beginner { background: var(--primary-light); color: var(--primary); }
+.badge-intermediate { background: var(--warning-soft); color: var(--warning); }
+.badge-advanced { background: var(--danger-soft); color: var(--danger); }
+
+/* --- Phone Mockup --- */
+.phone-row {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.phone {
+  width: 320px;
+  height: 640px;
+  background: #1a1a2e;
+  border-radius: 40px;
+  padding: 8px;
+  box-shadow: var(--shadow-lg);
+  flex-shrink: 0;
+  position: relative;
+}
+.phone::before {
+  content: '';
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 24px;
+  background: #1a1a2e;
+  border-radius: 0 0 16px 16px;
+  z-index: 10;
+}
+.phone-screen {
+  width: 100%;
+  height: 100%;
+  background: var(--bg);
+  border-radius: 32px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+.phone-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 40px 16px 80px;
+}
+.phone-label {
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-top: 12px;
+}
+
+/* --- Phone Components (Mini) --- */
+.mini-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+.mini-header h2 { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; }
+.mini-header .lang-btn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.mini-stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow-sm);
+}
+.mini-stat-value { font-size: 26px; font-weight: 800; letter-spacing: -0.03em; }
+.mini-stat-label { font-size: 12px; color: var(--text-muted); font-weight: 600; margin-top: 2px; }
+.mini-ring {
+  width: 48px; height: 48px;
+  flex-shrink: 0; position: relative;
+  display: flex; align-items: center; justify-content: center;
+}
+.mini-ring svg { transform: rotate(-90deg); }
+.mini-ring-text {
+  position: absolute;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.mini-chart-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow-sm);
+}
+.mini-chart-title { font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+.mini-chart-body { height: 80px; display: flex; align-items: flex-end; gap: 6px; }
+.mini-bar {
+  flex: 1;
+  background: var(--primary);
+  border-radius: 4px 4px 0 0;
+  opacity: 0.8;
+  min-height: 8px;
+}
+.mini-line-chart {
+  height: 80px;
+  position: relative;
+}
+.mini-line-chart svg { width: 100%; height: 100%; }
+
+.mini-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 12px;
+}
+.mini-section-header {
+  padding: 12px 14px 8px;
+  font-size: 14px;
+  font-weight: 700;
+}
+.mini-quick-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 0 14px 14px;
+}
+.mini-action-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+}
+.mini-action-icon {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: var(--primary-light);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--primary);
+  font-size: 14px;
+}
+
+.mini-session-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border-light);
+}
+.mini-session-item:last-child { border-bottom: none; }
+.mini-session-name { font-size: 13px; font-weight: 600; }
+.mini-session-date { font-size: 11px; color: var(--text-muted); }
+.mini-session-meta { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
+
+.mini-macro-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.mini-macro-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+}
+.mini-macro-value { font-size: 20px; font-weight: 800; }
+.mini-macro-label { font-size: 11px; color: var(--text-muted); font-weight: 600; margin-top: 2px; }
+
+.mini-meal-group {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+.mini-meal-title {
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 700;
+  border-bottom: 1px solid var(--border-light);
+  display: flex;
+  justify-content: space-between;
+}
+.mini-meal-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 12px;
+  font-size: 12px;
+}
+
+.mini-program-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 10px;
+  box-shadow: var(--shadow-sm);
+}
+.mini-program-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 6px;
+}
+.mini-program-header h3 { font-size: 14px; }
+.mini-program-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.mini-ai-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  text-align: center;
+  margin-bottom: 12px;
+}
+.mini-ai-icon {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: var(--primary-light);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 10px;
+  color: var(--primary);
+  font-size: 20px;
+}
+.mini-ai-card h3 { font-size: 14px; margin-bottom: 4px; }
+.mini-ai-card p { font-size: 12px; color: var(--text-muted); }
+
+.mini-navbar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 8px;
+}
+.mini-nav-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-decoration: none;
+  padding: 4px 8px;
+}
+.mini-nav-link.active { color: var(--primary); }
+.mini-nav-icon {
+  width: 22px; height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+}
+.mini-nav-icon.active-icon path:first-of-type {
+  fill: currentColor;
+  stroke: none;
+}
+.mini-nav-icon.diet-icon,
+.mini-nav-icon.ai-icon {
+  overflow: visible;
+}
+.mini-nav-icon.diet-icon path {
+  fill: none;
+}
+.mini-nav-icon.active-icon.diet-icon path,
+.mini-nav-icon.active-icon.ai-icon path {
+  fill: currentColor;
+  stroke: none;
+}
+.mini-navbar .mini-nav-link .mini-nav-icon {
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.mini-navbar .mini-nav-link {
+  font-size: 9.5px;
+  padding: 4px 0;
+}
+.mini-nav-link.active .mini-nav-icon { fill: currentColor; stroke: none; }
+
+/* --- Bottom Sheet Modal --- */
+.mini-modal-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: flex-end;
+  z-index: 50;
+}
+.mini-modal {
+  background: var(--surface);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  width: 100%;
+  padding: 16px 20px 24px;
+}
+.mini-modal-handle {
+  width: 36px; height: 4px;
+  border-radius: 2px;
+  background: var(--border);
+  margin: 0 auto 14px;
+}
+.mini-modal h3 { font-size: 16px; margin-bottom: 12px; }
+
+/* --- Skeleton --- */
+.skeleton {
+  background: linear-gradient(90deg, var(--surface-hover) 0%, var(--border) 50%, var(--surface-hover) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+  border-radius: var(--radius-sm);
+}
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* --- Design Tokens Table --- */
+.token-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--surface);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+.token-table th, .token-table td {
+  padding: 10px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-light);
+  font-size: 13px;
+}
+.token-table th {
+  background: var(--bg);
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+}
+.token-table td code {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--primary);
+}
+
+/* --- UX Principles --- */
+.principle-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+.principle-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+}
+.principle-card .icon {
+  width: 40px; height: 40px;
+  border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  margin-bottom: 12px;
+}
+.principle-card h4 { font-size: 15px; margin-bottom: 6px; }
+.principle-card p { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+
+/* --- Spacing Demo --- */
+.spacing-demo {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+}
+.spacing-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0;
+}
+.spacing-bar {
+  background: var(--primary);
+  border-radius: 2px;
+  height: 12px;
+}
+.spacing-label {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text-muted);
+  min-width: 80px;
+}
+
+/* --- Empty State --- */
+.empty-state {
+  text-align: center;
+  padding: 32px 16px;
+  background: var(--surface);
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  color: var(--text-muted);
+}
+.empty-state .icon { font-size: 32px; margin-bottom: 8px; }
+.empty-state p { font-size: 13px; }
+</style>
+</head>
+<body>
+
+<div class="design-page">
+
+  <!-- Header -->
+  <div class="design-header">
+    <h1>IronAI — UI/UX Design System</h1>
+    <p>健身追踪应用 · 移动优先设计 · 翠绿品牌色 · 底部 Tab 导航</p>
+  </div>
+
+  <!-- 1. Design Principles -->
+  <div class="section">
+    <div class="section-title"><span class="num">1</span> 设计原则 (UX Principles)</div>
+    <div class="principle-grid">
+      <div class="principle-card">
+        <div class="icon" style="background: var(--primary-light); color: var(--primary);">🎯</div>
+        <h4>内容优先</h4>
+        <p>数据展示是核心，装饰为辅。每个页面让用户 3 秒内看到关键数据。</p>
+      </div>
+      <div class="principle-card">
+        <div class="icon" style="background: var(--info-soft); color: var(--info);">👆</div>
+        <h4>拇指友好</h4>
+        <p>底部 Tab 导航 + 底部弹出模态框，所有操作均在拇指可达区域内。</p>
+      </div>
+      <div class="principle-card">
+        <div class="icon" style="background: var(--warning-soft); color: var(--warning);">⚡</div>
+        <h4>即时反馈</h4>
+        <p>骨架屏加载、hover 微交互、进度环动画，让用户感知系统状态。</p>
+      </div>
+      <div class="principle-card">
+        <div class="icon" style="background: #f3e8ff; color: var(--accent-purple);">📱</div>
+        <h4>移动原生</h4>
+        <p>安全区域适配 (env safe-area)、100dvh 动态视口、PWA 主屏幕体验。</p>
+      </div>
+      <div class="principle-card">
+        <div class="icon" style="background: var(--danger-soft); color: var(--danger);">🔄</div>
+        <h4>一致性</h4>
+        <p>统一的圆角、阴影、间距和颜色系统，组件复用降低认知成本。</p>
+      </div>
+      <div class="principle-card">
+        <div class="icon" style="background: var(--primary-light); color: var(--primary);">🌐</div>
+        <h4>国际化</h4>
+        <p>三语支持 (EN / 中 / ES)，文本不硬编码，布局适配长文本。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Color System -->
+  <div class="section">
+    <div class="section-title"><span class="num">2</span> 颜色系统 (Color System)</div>
+    <div class="color-grid">
+      <div class="color-card">
+        <div class="color-swatch" style="background: #10b981;"><span>#10b981</span></div>
+        <div class="color-info"><strong>Primary</strong><code>--primary</code></div>
+      </div>
+      <div class="color-card">
+        <div class="color-swatch" style="background: #059669;"><span>#059669</span></div>
+        <div class="color-info"><strong>Primary Hover</strong><code>--primary-hover</code></div>
+      </div>
+      <div class="color-card">
+        <div class="color-swatch" style="background: #ecfdf5;"><span style="color: #10b981; text-shadow: none;">#ecfdf5</span></div>
+        <div class="color-info"><strong>Primary Light</strong><code>--primary-light</code></div>
+      </div>
+      <div class="color-card">
+        <div class="color-swatch" style="background: #f8fafc;"><span style="color: #475569; text-shadow: none;">#f8fafc</span></div>
+        <div class="color-info"><strong>Background</strong><code>--bg</code></div>
+      </div>
+      <div class="color-card">
+        <div class="color-swatch" style="background: #ffffff; border-bottom: 1px solid var(--border);"><span style="color: #475569; text-shadow: none;">#ffffff</span></div>
+        <div class="color-info"><strong>Surface</strong><code>--surface</code></div>
+      </div>
+      <div class="color-card">
+        <div class="color-swatch" style="background: #0f172a;"><span>#0f172a</span></div>
+        <div class="color-info"><strong>Text Primary</strong><code>--text</code></div>
+      </div>
+      <div class="color-card">
+        <div class="color-swatch" style="background: #475569;"><span>#475569</span></div>
+        <div class="color-info"><strong>Text Secondary</strong><code>--text-secondary</code></div>
+      </div>
+      <div class="color-card">
+        <div class="color-swatch" style="background: #94a3b8;"><span>#94a3b8</span></div>
+        <div class="color-info"><strong>Text Muted</strong><code>--text-muted</code></div>
+      </div>
+      <div class="color-card">
+        <div class="color-swatch" style="background: #ef4444;"><span>#ef4444</span></div>
+        <div class="color-info"><strong>Danger</strong><code>--danger</code></div>
+      </div>
+      <div class="color-card">
+        <div class="color-swatch" style="background: #f59e0b;"><span>#f59e0b</span></div>
+        <div class="color-info"><strong>Warning</strong><code>--warning</code></div>
+      </div>
+      <div class="color-card">
+        <div class="color-swatch" style="background: #3b82f6;"><span>#3b82f6</span></div>
+        <div class="color-info"><strong>Info</strong><code>--info</code></div>
+      </div>
+      <div class="color-card">
+        <div class="color-swatch" style="background: #8b5cf6;"><span>#8b5cf6</span></div>
+        <div class="color-info"><strong>Accent Purple</strong><code>--accent-purple</code></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Typography -->
+  <div class="section">
+    <div class="section-title"><span class="num">3</span> 排版系统 (Typography)</div>
+    <div class="type-list">
+      <div class="type-row">
+        <div class="type-label">H1 / 28px</div>
+        <div class="type-sample" style="font-size: 28px; font-weight: 800; letter-spacing: -0.03em;">Dashboard</div>
+      </div>
+      <div class="type-row">
+        <div class="type-label">H2 / 20px</div>
+        <div class="type-sample" style="font-size: 20px; font-weight: 700; letter-spacing: -0.02em;">Recent Sessions</div>
+      </div>
+      <div class="type-row">
+        <div class="type-label">H3 / 17px</div>
+        <div class="type-sample" style="font-size: 17px; font-weight: 700;">Push Day Program</div>
+      </div>
+      <div class="type-row">
+        <div class="type-label">Stat / 32px</div>
+        <div class="type-sample" style="font-size: 32px; font-weight: 800; letter-spacing: -0.03em;">1,850 <span style="font-size: 15px; color: var(--text-muted); font-weight: 600;">kcal</span></div>
+      </div>
+      <div class="type-row">
+        <div class="type-label">Body / 15px</div>
+        <div class="type-sample" style="font-size: 15px;">Track your fitness journey with AI-powered insights.</div>
+      </div>
+      <div class="type-row">
+        <div class="type-label">Caption / 13px</div>
+        <div class="type-sample" style="font-size: 13px; color: var(--text-muted); font-weight: 600;">2 hours ago · 45 min</div>
+      </div>
+      <div class="type-row">
+        <div class="type-label">Label / 11px</div>
+        <div class="type-sample" style="font-size: 11px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">MON · 850 KCAL</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Spacing & Radii -->
+  <div class="section">
+    <div class="section-title"><span class="num">4</span> 间距与圆角 (Spacing & Radii)</div>
+    <div class="spacing-demo">
+      <div class="spacing-row"><div class="spacing-label">4px</div><div class="spacing-bar" style="width: 4px;"></div></div>
+      <div class="spacing-row"><div class="spacing-label">8px</div><div class="spacing-bar" style="width: 8px;"></div></div>
+      <div class="spacing-row"><div class="spacing-label">12px</div><div class="spacing-bar" style="width: 12px;"></div></div>
+      <div class="spacing-row"><div class="spacing-label">16px</div><div class="spacing-bar" style="width: 16px;"></div></div>
+      <div class="spacing-row"><div class="spacing-label">20px</div><div class="spacing-bar" style="width: 20px;"></div></div>
+      <div class="spacing-row"><div class="spacing-label">24px</div><div class="spacing-bar" style="width: 24px;"></div></div>
+      <div class="spacing-row"><div class="spacing-label">32px</div><div class="spacing-bar" style="width: 32px;"></div></div>
+    </div>
+    <table class="token-table" style="margin-top: 16px;">
+      <thead><tr><th>Token</th><th>Value</th><th>Usage</th></tr></thead>
+      <tbody>
+        <tr><td><code>--radius-sm</code></td><td>10px</td><td>Inputs, small badges, action cards</td></tr>
+        <tr><td><code>--radius</code></td><td>16px</td><td>Cards, sections, meal groups</td></tr>
+        <tr><td><code>--radius-lg</code></td><td>20px</td><td>Auth card</td></tr>
+        <tr><td><code>--radius-xl</code></td><td>24px</td><td>Bottom sheet modal top corners</td></tr>
+        <tr><td><code>--radius-full</code></td><td>999px</td><td>Buttons, pills, avatars, date picker</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 5. Components -->
+  <div class="section">
+    <div class="section-title"><span class="num">5</span> 组件库 (Components)</div>
+    <div class="component-grid">
+      <!-- Buttons -->
+      <div class="component-card">
+        <h4>Buttons</h4>
+        <div class="btn-group" style="margin-bottom: 10px;">
+          <button class="btn btn-primary">Primary</button>
+          <button class="btn btn-outline">Outline</button>
+        </div>
+        <div class="btn-group" style="margin-bottom: 10px;">
+          <button class="btn btn-ghost">Ghost</button>
+          <button class="btn btn-danger">Delete</button>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary btn-sm">Small</button>
+          <button class="btn btn-outline btn-sm">Small</button>
+        </div>
+      </div>
+
+      <!-- Form -->
+      <div class="component-card">
+        <h4>Form Elements</h4>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" placeholder="user@example.com" value="user@example.com" />
+        </div>
+        <div class="form-group">
+          <label>Goal Type</label>
+          <select><option>Weight Loss</option><option>Muscle Gain</option></select>
+        </div>
+      </div>
+
+      <!-- Badges -->
+      <div class="component-card">
+        <h4>Badges</h4>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px;">
+          <span class="badge badge-beginner">Beginner</span>
+          <span class="badge badge-intermediate">Intermediate</span>
+          <span class="badge badge-advanced">Advanced</span>
+        </div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <span class="badge" style="background: var(--info-soft); color: var(--info);">Chest</span>
+          <span class="badge" style="background: var(--warning-soft); color: var(--warning);">Back</span>
+          <span class="badge" style="background: #f3e8ff; color: var(--accent-purple);">Legs</span>
+        </div>
+      </div>
+
+      <!-- Progress Ring -->
+      <div class="component-card">
+        <h4>Progress Ring</h4>
+        <div style="display: flex; gap: 20px; align-items: center;">
+          <div style="position: relative; width: 56px; height: 56px;">
+            <svg width="56" height="56" style="transform: rotate(-90deg);">
+              <circle cx="28" cy="28" r="24" fill="none" stroke="var(--border)" stroke-width="5" />
+              <circle cx="28" cy="28" r="24" fill="none" stroke="var(--primary)" stroke-width="5" stroke-linecap="round" stroke-dasharray="150.8" stroke-dashoffset="45.2" />
+            </svg>
+            <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: var(--primary);">70%</div>
+          </div>
+          <div>
+            <div style="font-size: 24px; font-weight: 800;">1,540</div>
+            <div style="font-size: 13px; color: var(--text-muted); font-weight: 600;">/ 2,200 kcal</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Skeleton -->
+      <div class="component-card">
+        <h4>Skeleton Loading</h4>
+        <div class="skeleton" style="height: 28px; width: 60%; margin-bottom: 10px;"></div>
+        <div class="skeleton" style="height: 14px; width: 100%; margin-bottom: 6px;"></div>
+        <div class="skeleton" style="height: 14px; width: 80%; margin-bottom: 14px;"></div>
+        <div class="skeleton" style="height: 60px; width: 100%; border-radius: var(--radius);"></div>
+      </div>
+
+      <!-- Empty State -->
+      <div class="component-card">
+        <h4>Empty State</h4>
+        <div class="empty-state">
+          <div class="icon">📋</div>
+          <p>No sessions yet</p>
+          <p style="font-size: 12px; margin-top: 4px;">Start your first training session</p>
+        </div>
+      </div>
+
+      <!-- Shadows -->
+      <div class="component-card">
+        <h4>Shadows</h4>
+        <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+          <div style="width: 60px; height: 60px; background: var(--surface); border-radius: var(--radius-sm); box-shadow: var(--shadow-sm);"></div>
+          <div style="width: 60px; height: 60px; background: var(--surface); border-radius: var(--radius-sm); box-shadow: var(--shadow);"></div>
+          <div style="width: 60px; height: 60px; background: var(--surface); border-radius: var(--radius-sm); box-shadow: var(--shadow-md);"></div>
+          <div style="width: 60px; height: 60px; background: var(--surface); border-radius: var(--radius-sm); box-shadow: var(--shadow-lg);"></div>
+        </div>
+        <div style="display: flex; gap: 16px; margin-top: 8px; font-size: 11px; color: var(--text-muted); font-family: var(--mono);">
+          <span>sm</span><span>default</span><span>md</span><span>lg</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. Page Mockups -->
+  <div class="section">
+    <div class="section-title"><span class="num">6</span> 页面原型 (Page Mockups)</div>
+    <div class="phone-row">
+
+      <!-- Dashboard -->
+      <div>
+        <div class="phone">
+          <div class="phone-screen">
+            <div class="phone-content">
+              <div class="mini-header">
+                <div>
+                  <h2>Dashboard</h2>
+                  <div style="font-size: 12px; color: var(--text-muted);">Welcome back, User</div>
+                </div>
+                <button class="lang-btn">EN</button>
+              </div>
+
+              <!-- Calorie Stat Card -->
+              <div class="mini-stat-card">
+                <div>
+                  <div class="mini-stat-value">1,540 <span style="font-size: 13px; color: var(--text-muted);">kcal</span></div>
+                  <div class="mini-stat-label">Today's Calories</div>
+                </div>
+                <div class="mini-ring">
+                  <svg width="48" height="48">
+                    <circle cx="24" cy="24" r="20" fill="none" stroke="var(--border)" stroke-width="4" />
+                    <circle cx="24" cy="24" r="20" fill="none" stroke="var(--primary)" stroke-width="4" stroke-linecap="round" stroke-dasharray="125.6" stroke-dashoffset="37.7" />
+                  </svg>
+                  <div class="mini-ring-text">70%</div>
+                </div>
+              </div>
+
+              <!-- Session Stat Card -->
+              <div class="mini-stat-card">
+                <div>
+                  <div class="mini-stat-value">12</div>
+                  <div class="mini-stat-label">Training Sessions</div>
+                </div>
+                <div class="mini-ring">
+                  <svg width="48" height="48">
+                    <circle cx="24" cy="24" r="20" fill="none" stroke="var(--border)" stroke-width="4" />
+                    <circle cx="24" cy="24" r="20" fill="none" stroke="var(--accent-purple)" stroke-width="4" stroke-linecap="round" stroke-dasharray="125.6" stroke-dashoffset="62.8" />
+                  </svg>
+                  <div class="mini-ring-text" style="color: var(--accent-purple);">50%</div>
+                </div>
+              </div>
+
+              <!-- Chart -->
+              <div class="mini-chart-card">
+                <div class="mini-chart-title">Calorie Trend (7 days)</div>
+                <div class="mini-line-chart">
+                  <svg viewBox="0 0 280 80" preserveAspectRatio="none">
+                    <polyline points="0,50 40,35 80,45 120,20 160,30 200,15 240,25 280,10" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    <circle cx="280" cy="10" r="3" fill="var(--primary)" />
+                  </svg>
+                </div>
+              </div>
+
+              <!-- Quick Actions -->
+              <div class="mini-section">
+                <div class="mini-section-header">Quick Actions</div>
+                <div class="mini-quick-actions">
+                  <div class="mini-action-card">
+                    <div class="mini-action-icon">🏋️</div>
+                    Start Session
+                  </div>
+                  <div class="mini-action-card">
+                    <div class="mini-action-icon">🍽️</div>
+                    Log Meal
+                  </div>
+                  <div class="mini-action-card">
+                    <div class="mini-action-icon">📊</div>
+                    View Stats
+                  </div>
+                  <div class="mini-action-card">
+                    <div class="mini-action-icon">🤖</div>
+                    AI Analysis
+                  </div>
+                </div>
+              </div>
+
+              <!-- Recent Sessions -->
+              <div class="mini-section">
+                <div class="mini-section-header">Recent Sessions</div>
+                <div class="mini-session-item">
+                  <div>
+                    <div class="mini-session-name">Push Day</div>
+                    <div class="mini-session-date">2h ago</div>
+                  </div>
+                  <div class="mini-session-meta">45 min · 8/10</div>
+                </div>
+                <div class="mini-session-item">
+                  <div>
+                    <div class="mini-session-name">Leg Day</div>
+                    <div class="mini-session-date">Yesterday</div>
+                  </div>
+                  <div class="mini-session-meta">60 min · 9/10</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Bottom Nav -->
+            <div class="mini-navbar">
+              <a class="mini-nav-link active">
+                <svg class="mini-nav-icon active-icon" viewBox="0 0 24 24"><path d="M3 11 L12 3 L21 11 V20 H3 Z M10 20 V15 H14 V20" /></svg>
+                Home
+              </a>
+              <a class="mini-nav-link">
+                <svg class="mini-nav-icon" viewBox="0 0 24 24"><path d="M13 2 L5 13 H11 L9 22 L19 10 H13 Z" /></svg>
+                Train
+              </a>
+              <a class="mini-nav-link">
+                <svg class="mini-nav-icon diet-icon" viewBox="0 0 24 24"><path d="M3 15 C3 12 7 10 12 10 C17 10 21 12 21 15 C21 18 17 20 12 20 C7 20 3 18 3 15 Z" /><path d="M9.2 6.2 C9.2 4.8 10.5 3.9 11.9 3.9 C13.3 3.9 14.6 4.8 14.6 6.2 C14.6 7.7 11.9 10.2 11.9 10.2 C11.9 10.2 9.2 7.7 9.2 6.2 Z" /></svg>
+                Diet
+              </a>
+              <a class="mini-nav-link">
+                <svg class="mini-nav-icon ai-icon" viewBox="0 0 24 24"><path d="M12 1.5 L14.4 8.1 L21.3 8.3 L15.7 12.5 L17.6 19.3 L12 15.7 L6.4 19.3 L8.3 12.5 L2.7 8.3 L9.6 8.1 Z" /><circle cx="12" cy="0.2" r="0.6" fill="currentColor"/><circle cx="23.8" cy="12" r="0.6" fill="currentColor"/><circle cx="12" cy="23.8" r="0.6" fill="currentColor"/><circle cx="0.2" cy="12" r="0.6" fill="currentColor"/></svg>
+                AI
+              </a>
+              <a class="mini-nav-link">
+                <svg class="mini-nav-icon" viewBox="0 0 24 24"><path d="M12 11 C14.2 11 16 9.2 16 7 C16 4.8 14.2 3 12 3 C9.8 3 8 4.8 8 7 C8 9.2 9.8 11 12 11 Z M20 21 V19 C20 16.2 16.4 14 12 14 C7.6 14 4 16.2 4 19 V21" /></svg>
+                Profile
+              </a>
+            </div>
+          </div>
+        </div>
+        <div class="phone-label">Dashboard / 首页</div>
+      </div>
+
+      <!-- Training -->
+      <div>
+        <div class="phone">
+          <div class="phone-screen">
+            <div class="phone-content">
+              <div class="mini-header">
+                <h2>Training</h2>
+                <button class="lang-btn" style="background: var(--primary); color: #fff; border: none;">+ New</button>
+              </div>
+
+              <!-- Chart -->
+              <div class="mini-chart-card">
+                <div class="mini-chart-title">Training Duration</div>
+                <div class="mini-chart-body">
+                  <div class="mini-bar" style="height: 60%;"></div>
+                  <div class="mini-bar" style="height: 80%;"></div>
+                  <div class="mini-bar" style="height: 45%;"></div>
+                  <div class="mini-bar" style="height: 90%;"></div>
+                  <div class="mini-bar" style="height: 70%;"></div>
+                  <div class="mini-bar" style="height: 55%;"></div>
+                  <div class="mini-bar" style="height: 85%;"></div>
+                </div>
+              </div>
+
+              <!-- Program Cards -->
+              <div class="mini-program-card">
+                <div class="mini-program-header">
+                  <h3>Push Day</h3>
+                  <span class="badge badge-intermediate">Intermediate</span>
+                </div>
+                <div class="mini-program-meta">Chest · Triceps · Shoulders · 5 exercises</div>
+              </div>
+
+              <div class="mini-program-card">
+                <div class="mini-program-header">
+                  <h3>Pull Day</h3>
+                  <span class="badge badge-beginner">Beginner</span>
+                </div>
+                <div class="mini-program-meta">Back · Biceps · 4 exercises</div>
+              </div>
+
+              <div class="mini-program-card">
+                <div class="mini-program-header">
+                  <h3>Leg Day</h3>
+                  <span class="badge badge-advanced">Advanced</span>
+                </div>
+                <div class="mini-program-meta">Quads · Hamstrings · Glutes · 6 exercises</div>
+              </div>
+
+              <!-- Muscle Group Chart -->
+              <div class="mini-chart-card">
+                <div class="mini-chart-title">Muscle Group Distribution</div>
+                <div style="display: flex; gap: 8px; align-items: center; justify-content: center; padding: 10px 0;">
+                  <div style="width: 60px; height: 60px; border-radius: 50%; background: conic-gradient(var(--primary) 0% 35%, var(--accent-purple) 35% 60%, var(--info) 60% 80%, var(--warning) 80% 100%); display: flex; align-items: center; justify-content: center;">
+                    <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--surface);"></div>
+                  </div>
+                  <div style="font-size: 11px; line-height: 1.8;">
+                    <div>🟢 Chest 35%</div>
+                    <div>🟣 Back 25%</div>
+                    <div>🔵 Legs 20%</div>
+                    <div>🟡 Arms 20%</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mini-navbar">
+              <a class="mini-nav-link">
+                <svg class="mini-nav-icon" viewBox="0 0 24 24"><path d="M3 11 L12 3 L21 11 V20 H3 Z M10 20 V15 H14 V20" /></svg>
+                Home
+              </a>
+              <a class="mini-nav-link active">
+                <svg class="mini-nav-icon active-icon" viewBox="0 0 24 24"><path d="M13 2 L5 13 H11 L9 22 L19 10 H13 Z" /></svg>
+                Train
+              </a>
+              <a class="mini-nav-link">
+                <svg class="mini-nav-icon diet-icon" viewBox="0 0 24 24"><path d="M3 15 C3 12 7 10 12 10 C17 10 21 12 21 15 C21 18 17 20 12 20 C7 20 3 18 3 15 Z" /><path d="M9.2 6.2 C9.2 4.8 10.5 3.9 11.9 3.9 C13.3 3.9 14.6 4.8 14.6 6.2 C14.6 7.7 11.9 10.2 11.9 10.2 C11.9 10.2 9.2 7.7 9.2 6.2 Z" /></svg>
+                Diet
+              </a>
+              <a class="mini-nav-link">
+                <svg class="mini-nav-icon ai-icon" viewBox="0 0 24 24"><path d="M12 1.5 L14.4 8.1 L21.3 8.3 L15.7 12.5 L17.6 19.3 L12 15.7 L6.4 19.3 L8.3 12.5 L2.7 8.3 L9.6 8.1 Z" /><circle cx="12" cy="0.2" r="0.6" fill="currentColor"/><circle cx="23.8" cy="12" r="0.6" fill="currentColor"/><circle cx="12" cy="23.8" r="0.6" fill="currentColor"/><circle cx="0.2" cy="12" r="0.6" fill="currentColor"/></svg>
+                AI
+              </a>
+              <a class="mini-nav-link">
+                <svg class="mini-nav-icon" viewBox="0 0 24 24"><path d="M12 11 C14.2 11 16 9.2 16 7 C16 4.8 14.2 3 12 3 C9.8 3 8 4.8 8 7 C8 9.2 9.8 11 12 11 Z M20 21 V19 C20 16.2 16.4 14 12 14 C7.6 14 4 16.2 4 19 V21" /></svg>
+                Profile
+              </a>
+            </div>
+          </div>
+        </div>
+        <div class="phone-label">Training / 训练</div>
+      </div>
+
+      <!-- Diet -->
+      <div>
+        <div class="phone">
+          <div class="phone-screen">
+            <div class="phone-content">
+              <div class="mini-header">
+                <h2>Diet</h2>
+                <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-full); padding: 4px 10px; font-size: 11px; font-weight: 600;">📅 Aug 12</div>
+              </div>
+
+              <!-- Macro Grid -->
+              <div class="mini-macro-grid">
+                <div class="mini-macro-item">
+                  <div class="mini-macro-value" style="color: var(--primary);">120g</div>
+                  <div class="mini-macro-label">Protein</div>
+                </div>
+                <div class="mini-macro-item">
+                  <div class="mini-macro-value" style="color: var(--accent-blue);">220g</div>
+                  <div class="mini-macro-label">Carbs</div>
+                </div>
+                <div class="mini-macro-item">
+                  <div class="mini-macro-value" style="color: var(--warning);">65g</div>
+                  <div class="mini-macro-label">Fat</div>
+                </div>
+                <div class="mini-macro-item">
+                  <div class="mini-macro-value">1,540</div>
+                  <div class="mini-macro-label">Calories</div>
+                </div>
+              </div>
+
+              <!-- Macro Pie Chart -->
+              <div class="mini-chart-card">
+                <div class="mini-chart-title">Macro Distribution</div>
+                <div style="display: flex; gap: 12px; align-items: center; justify-content: center; padding: 6px 0;">
+                  <div style="width: 60px; height: 60px; border-radius: 50%; background: conic-gradient(var(--primary) 0% 30%, var(--accent-blue) 30% 55%, var(--warning) 55% 75%, var(--border) 75% 100%); display: flex; align-items: center; justify-content: center;">
+                    <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--surface); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700;">70%</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Meals -->
+              <div class="mini-meal-group">
+                <div class="mini-meal-title">
+                  <span>🍳 Breakfast</span>
+                  <span style="color: var(--primary); font-weight: 700;">420 kcal</span>
+                </div>
+                <div class="mini-meal-item">
+                  <span>Oatmeal with berries</span>
+                  <span style="color: var(--text-muted);">280 kcal</span>
+                </div>
+                <div class="mini-meal-item">
+                  <span>Greek yogurt</span>
+                  <span style="color: var(--text-muted);">140 kcal</span>
+                </div>
+              </div>
+
+              <div class="mini-meal-group">
+                <div class="mini-meal-title">
+                  <span>🥗 Lunch</span>
+                  <span style="color: var(--primary); font-weight: 700;">680 kcal</span>
+                </div>
+                <div class="mini-meal-item">
+                  <span>Grilled chicken salad</span>
+                  <span style="color: var(--text-muted);">520 kcal</span>
+                </div>
+                <div class="mini-meal-item">
+                  <span>Brown rice</span>
+                  <span style="color: var(--text-muted);">160 kcal</span>
+                </div>
+              </div>
+
+              <div class="mini-meal-group">
+                <div class="mini-meal-title">
+                  <span>🍎 Snack</span>
+                  <span style="color: var(--primary); font-weight: 700;">200 kcal</span>
+                </div>
+                <div class="mini-meal-item">
+                  <span>Protein shake</span>
+                  <span style="color: var(--text-muted);">200 kcal</span>
+                </div>
+              </div>
+
+              <!-- Calorie Trend -->
+              <div class="mini-chart-card">
+                <div class="mini-chart-title">Calorie Trend (7 days)</div>
+                <div class="mini-line-chart">
+                  <svg viewBox="0 0 280 80" preserveAspectRatio="none">
+                    <polyline points="0,30 40,40 80,25 120,35 160,20 200,45 240,30 280,15" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <div class="mini-navbar">
+              <a class="mini-nav-link">
+                <svg class="mini-nav-icon" viewBox="0 0 24 24"><path d="M3 11 L12 3 L21 11 V20 H3 Z M10 20 V15 H14 V20" /></svg>
+                Home
+              </a>
+              <a class="mini-nav-link">
+                <svg class="mini-nav-icon" viewBox="0 0 24 24"><path d="M13 2 L5 13 H11 L9 22 L19 10 H13 Z" /></svg>
+                Train
+              </a>
+              <a class="mini-nav-link active">
+                <svg class="mini-nav-icon active-icon diet-icon" viewBox="0 0 24 24"><path d="M3 15 C3 12 7 10 12 10 C17 10 21 12 21 15 C21 18 17 20 12 20 C7 20 3 18 3 15 Z" /><path d="M9.2 6.2 C9.2 4.8 10.5 3.9 11.9 3.9 C13.3 3.9 14.6 4.8 14.6 6.2 C14.6 7.7 11.9 10.2 11.9 10.2 C11.9 10.2 9.2 7.7 9.2 6.2 Z" /></svg>
+                Diet
+              </a>
+              <a class="mini-nav-link">
+                <svg class="mini-nav-icon ai-icon" viewBox="0 0 24 24"><path d="M12 1.5 L14.4 8.1 L21.3 8.3 L15.7 12.5 L17.6 19.3 L12 15.7 L6.4 19.3 L8.3 12.5 L2.7 8.3 L9.6 8.1 Z" /><circle cx="12" cy="0.2" r="0.6" fill="currentColor"/><circle cx="23.8" cy="12" r="0.6" fill="currentColor"/><circle cx="12" cy="23.8" r="0.6" fill="currentColor"/><circle cx="0.2" cy="12" r="0.6" fill="currentColor"/></svg>
+                AI
+              </a>
+              <a class="mini-nav-link">
+                <svg class="mini-nav-icon" viewBox="0 0 24 24"><path d="M12 11 C14.2 11 16 9.2 16 7 C16 4.8 14.2 3 12 3 C9.8 3 8 4.8 8 7 C8 9.2 9.8 11 12 11 Z M20 21 V19 C20 16.2 16.4 14 12 14 C7.6 14 4 16.2 4 19 V21" /></svg>
+                Profile
+              </a>
+            </div>
+          </div>
+        </div>
+        <div class="phone-label">Diet / 饮食</div>
+      </div>
+
+      <!-- AI Analysis -->
+      <div>
+        <div class="phone">
+          <div class="phone-screen">
+            <div class="phone-content">
+              <div class="mini-header">
+                <h2>AI Analysis</h2>
+              </div>
+
+              <div class="mini-ai-card">
+                <div class="mini-ai-icon">📊</div>
+                <h3>Diet Analysis</h3>
+                <p>Get AI-powered insights on your nutrition</p>
+                <button class="btn btn-primary btn-sm" style="margin-top: 10px;">Analyze</button>
+              </div>
+
+              <div class="mini-ai-card">
+                <div class="mini-ai-icon">🏋️</div>
+                <h3>Training Plan</h3>
+                <p>Personalized workout recommendations</p>
+                <button class="btn btn-primary btn-sm" style="margin-top: 10px;">Generate</button>
+              </div>
+
+              <div class="mini-ai-card">
+                <div class="mini-ai-icon">🎯</div>
+                <h3>Goal Review</h3>
+                <p>Track progress towards your fitness goals</p>
+                <button class="btn btn-primary btn-sm" style="margin-top: 10px;">Review</button>
+              </div>
+
+              <!-- History -->
+              <div class="mini-section">
+                <div class="mini-section-header">History</div>
+                <div class="mini-session-item">
+                  <div>
+                    <div class="mini-session-name">Diet Analysis</div>
+                    <div class="mini-session-date">Aug 11, 2026</div>
+                  </div>
+                  <div class="mini-session-meta">→</div>
+                </div>
+                <div class="mini-session-item">
+                  <div>
+                    <div class="mini-session-name">Training Plan</div>
+                    <div class="mini-session-date">Aug 10, 2026</div>
+                  </div>
+                  <div class="mini-session-meta">→</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mini-navbar">
+              <a class="mini-nav-link">
+                <svg class="mini-nav-icon" viewBox="0 0 24 24"><path d="M3 11 L12 3 L21 11 V20 H3 Z M10 20 V15 H14 V20" /></svg>
+                Home
+              </a>
+              <a class="mini-nav-link">
+                <svg class="mini-nav-icon" viewBox="0 0 24 24"><path d="M13 2 L5 13 H11 L9 22 L19 10 H13 Z" /></svg>
+                Train
+              </a>
+              <a class="mini-nav-link">
+                <svg class="mini-nav-icon diet-icon" viewBox="0 0 24 24"><path d="M3 15 C3 12 7 10 12 10 C17 10 21 12 21 15 C21 18 17 20 12 20 C7 20 3 18 3 15 Z" /><path d="M9.2 6.2 C9.2 4.8 10.5 3.9 11.9 3.9 C13.3 3.9 14.6 4.8 14.6 6.2 C14.6 7.7 11.9 10.2 11.9 10.2 C11.9 10.2 9.2 7.7 9.2 6.2 Z" /></svg>
+                Diet
+              </a>
+              <a class="mini-nav-link active">
+                <svg class="mini-nav-icon active-icon ai-icon" viewBox="0 0 24 24"><path d="M12 1.5 L14.4 8.1 L21.3 8.3 L15.7 12.5 L17.6 19.3 L12 15.7 L6.4 19.3 L8.3 12.5 L2.7 8.3 L9.6 8.1 Z" /><circle cx="12" cy="0.2" r="0.6" fill="currentColor"/><circle cx="23.8" cy="12" r="0.6" fill="currentColor"/><circle cx="12" cy="23.8" r="0.6" fill="currentColor"/><circle cx="0.2" cy="12" r="0.6" fill="currentColor"/></svg>
+                AI
+              </a>
+              <a class="mini-nav-link">
+                <svg class="mini-nav-icon" viewBox="0 0 24 24"><path d="M12 11 C14.2 11 16 9.2 16 7 C16 4.8 14.2 3 12 3 C9.8 3 8 4.8 8 7 C8 9.2 9.8 11 12 11 Z M20 21 V19 C20 16.2 16.4 14 12 14 C7.6 14 4 16.2 4 19 V21" /></svg>
+                Profile
+              </a>
+            </div>
+          </div>
+        </div>
+        <div class="phone-label">AI Analysis / AI分析</div>
+      </div>
+
+      <!-- Auth Page -->
+      <div>
+        <div class="phone">
+          <div class="phone-screen" style="background: linear-gradient(160deg, var(--primary-light) 0%, var(--bg) 50%);">
+            <div class="phone-content" style="display: flex; align-items: center; justify-content: center; padding: 20px;">
+              <div style="width: 100%; background: var(--surface); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); padding: 24px 20px;">
+                <!-- Brand -->
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 24px;">
+                  <div style="width: 32px; height: 32px; border-radius: var(--radius-sm); background: linear-gradient(135deg, var(--primary), var(--primary-hover)); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 14px;">I</div>
+                  <span style="font-weight: 700; font-size: 16px;">IronAI</span>
+                </div>
+
+                <h2 style="font-size: 22px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 4px;">Welcome back</h2>
+                <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 20px;">Log in to continue your fitness journey</p>
+
+                <div class="form-group">
+                  <label style="font-size: 13px;">Email</label>
+                  <input type="email" placeholder="user@example.com" style="padding: 10px 14px; font-size: 14px;" />
+                </div>
+                <div class="form-group">
+                  <label style="font-size: 13px;">Password</label>
+                  <input type="password" placeholder="••••••••" style="padding: 10px 14px; font-size: 14px;" />
+                </div>
+
+                <button class="btn btn-primary btn-full" style="margin-top: 8px;">Log In</button>
+
+                <p style="text-align: center; font-size: 13px; color: var(--text-secondary); margin-top: 16px;">
+                  Don't have an account? <span style="color: var(--primary); font-weight: 600;">Sign up</span>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="phone-label">Auth / 登录注册</div>
+      </div>
+
+      <!-- Bottom Sheet Modal -->
+      <div>
+        <div class="phone">
+          <div class="phone-screen">
+            <div class="phone-content">
+              <div class="mini-header">
+                <h2>Training</h2>
+                <button class="lang-btn" style="background: var(--primary); color: #fff; border: none;">+ New</button>
+              </div>
+              <div class="mini-program-card">
+                <div class="mini-program-header">
+                  <h3>Push Day</h3>
+                  <span class="badge badge-intermediate">Intermediate</span>
+                </div>
+                <div class="mini-program-meta">Chest · Triceps · Shoulders</div>
+              </div>
+
+              <!-- Modal Overlay -->
+              <div class="mini-modal-overlay">
+                <div class="mini-modal">
+                  <div class="mini-modal-handle"></div>
+                  <h3>Log Training Session</h3>
+                  <div class="form-group">
+                    <label style="font-size: 13px;">Program</label>
+                    <select style="padding: 10px 14px; font-size: 14px;"><option>Push Day</option></select>
+                  </div>
+                  <div class="form-group">
+                    <label style="font-size: 13px;">Duration (min)</label>
+                    <input type="number" value="45" style="padding: 10px 14px; font-size: 14px;" />
+                  </div>
+                  <div class="form-group">
+                    <label style="font-size: 13px;">Perceived Effort (1-10)</label>
+                    <input type="number" value="8" min="1" max="10" style="padding: 10px 14px; font-size: 14px;" />
+                  </div>
+                  <button class="btn btn-primary btn-full">Save Session</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="mini-navbar">
+              <a class="mini-nav-link">
+                <svg class="mini-nav-icon" viewBox="0 0 24 24"><path d="M3 11 L12 3 L21 11 V20 H3 Z M10 20 V15 H14 V20" /></svg>
+                Home
+              </a>
+              <a class="mini-nav-link active">
+                <svg class="mini-nav-icon active-icon" viewBox="0 0 24 24"><path d="M13 2 L5 13 H11 L9 22 L19 10 H13 Z" /></svg>
+                Train
+              </a>
+              <a class="mini-nav-link">
+                <svg class="mini-nav-icon diet-icon" viewBox="0 0 24 24"><path d="M3 15 C3 12 7 10 12 10 C17 10 21 12 21 15 C21 18 17 20 12 20 C7 20 3 18 3 15 Z" /><path d="M9.2 6.2 C9.2 4.8 10.5 3.9 11.9 3.9 C13.3 3.9 14.6 4.8 14.6 6.2 C14.6 7.7 11.9 10.2 11.9 10.2 C11.9 10.2 9.2 7.7 9.2 6.2 Z" /></svg>
+                Diet
+              </a>
+              <a class="mini-nav-link">
+                <svg class="mini-nav-icon ai-icon" viewBox="0 0 24 24"><path d="M12 1.5 L14.4 8.1 L21.3 8.3 L15.7 12.5 L17.6 19.3 L12 15.7 L6.4 19.3 L8.3 12.5 L2.7 8.3 L9.6 8.1 Z" /><circle cx="12" cy="0.2" r="0.6" fill="currentColor"/><circle cx="23.8" cy="12" r="0.6" fill="currentColor"/><circle cx="12" cy="23.8" r="0.6" fill="currentColor"/><circle cx="0.2" cy="12" r="0.6" fill="currentColor"/></svg>
+                AI
+              </a>
+              <a class="mini-nav-link">
+                <svg class="mini-nav-icon" viewBox="0 0 24 24"><path d="M12 11 C14.2 11 16 9.2 16 7 C16 4.8 14.2 3 12 3 C9.8 3 8 4.8 8 7 C8 9.2 9.8 11 12 11 Z M20 21 V19 C20 16.2 16.4 14 12 14 C7.6 14 4 16.2 4 19 V21" /></svg>
+                Profile
+              </a>
+            </div>
+          </div>
+        </div>
+        <div class="phone-label">Bottom Sheet / 底部弹窗</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 7. Body Measurement Tracking -->
+  <div class="section">
+    <div class="section-title"><span class="num">7</span> 体重与体测追踪 (Body Measurement Tracking)</div>
+
+    <!-- Feature Description -->
+    <div class="component-card" style="margin-bottom: 24px;">
+      <h4>功能概述</h4>
+      <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 12px;">
+        用户档案的 <code style="font-family: var(--mono); background: var(--surface-hover); padding: 2px 6px; border-radius: 4px; font-size: 13px;">weight_kg</code> 是静态字段，无法记录历史变化。
+        本功能新增 <strong>体测记录</strong> 模块，支持记录体重、体脂率、肌肉量、腰围等数据，并提供趋势可视化与目标线。
+      </p>
+      <table class="token-table">
+        <thead><tr><th>字段</th><th>类型</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td><code>weight_kg</code></td><td>Float?</td><td>体重 (kg)</td></tr>
+          <tr><td><code>body_fat_pct</code></td><td>Float?</td><td>体脂率 (%)</td></tr>
+          <tr><td><code>muscle_mass_kg</code></td><td>Float?</td><td>肌肉量 (kg)</td></tr>
+          <tr><td><code>waist_cm</code></td><td>Float?</td><td>腰围 (cm)</td></tr>
+          <tr><td><code>measured_at</code></td><td>Date</td><td>测量日期</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Phone Mockups -->
+    <div class="phone-row">
+
+      <!-- Body Measurement Page -->
+      <div>
+        <div class="phone">
+          <div class="phone-screen">
+            <div class="phone-content">
+              <div class="mini-header">
+                <h2>Body Stats</h2>
+                <button class="lang-btn" style="background: var(--primary); color: #fff; border: none;">+ Log</button>
+              </div>
+
+              <!-- Current Weight Hero Card -->
+              <div style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%); border-radius: var(--radius); padding: 20px; margin-bottom: 14px; color: #fff; box-shadow: var(--shadow-brand);">
+                <div style="font-size: 12px; opacity: 0.8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Current Weight</div>
+                <div style="display: flex; align-items: baseline; gap: 6px; margin-top: 4px;">
+                  <span style="font-size: 36px; font-weight: 800; letter-spacing: -0.03em;">75.2</span>
+                  <span style="font-size: 16px; opacity: 0.8; font-weight: 600;">kg</span>
+                </div>
+                <div style="display: flex; gap: 12px; margin-top: 8px; font-size: 12px; opacity: 0.9;">
+                  <span style="display: flex; align-items: center; gap: 3px;">
+                    <span style="font-size: 14px;">↓</span> -1.8 kg / 30 days
+                  </span>
+                  <span>Goal: 72 kg</span>
+                </div>
+              </div>
+
+              <!-- Weight Trend Chart -->
+              <div class="mini-chart-card">
+                <div class="mini-chart-title">Weight Trend (30 days)</div>
+                <div class="mini-line-chart" style="height: 100px; position: relative;">
+                  <svg viewBox="0 0 280 100" preserveAspectRatio="none" style="width: 100%; height: 100%;">
+                    <!-- Goal line (dashed) -->
+                    <line x1="0" y1="25" x2="280" y2="25" stroke="var(--accent-orange)" stroke-width="1.5" stroke-dasharray="4 4" opacity="0.6" />
+                    <!-- Weight line -->
+                    <defs>
+                      <linearGradient id="weightGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="var(--primary)" stop-opacity="0.2" />
+                        <stop offset="100%" stop-color="var(--primary)" stop-opacity="0" />
+                      </linearGradient>
+                    </defs>
+                    <polygon points="0,60 40,55 80,50 120,45 160,42 200,38 240,35 280,30 280,100 0,100" fill="url(#weightGrad)" />
+                    <polyline points="0,60 40,55 80,50 120,45 160,42 200,38 240,35 280,30" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    <circle cx="280" cy="30" r="4" fill="var(--primary)" stroke="#fff" stroke-width="2" />
+                  </svg>
+                  <div style="position: absolute; top: 2px; right: 4px; font-size: 9px; color: var(--accent-orange); font-weight: 700;">🎯 72kg</div>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 9px; color: var(--text-muted); margin-top: 4px;">
+                  <span>Jul 13</span><span>Jul 28</span><span>Aug 12</span>
+                </div>
+              </div>
+
+              <!-- Body Composition Stats -->
+              <div class="mini-macro-grid">
+                <div class="mini-macro-item">
+                  <div class="mini-macro-value" style="font-size: 18px;">18.5%</div>
+                  <div class="mini-macro-label">Body Fat</div>
+                </div>
+                <div class="mini-macro-item">
+                  <div class="mini-macro-value" style="font-size: 18px;">62.1 <span style="font-size: 12px; color: var(--text-muted);">kg</span></div>
+                  <div class="mini-macro-label">Muscle Mass</div>
+                </div>
+                <div class="mini-macro-item">
+                  <div class="mini-macro-value" style="font-size: 18px;">82 <span style="font-size: 12px; color: var(--text-muted);">cm</span></div>
+                  <div class="mini-macro-label">Waist</div>
+                </div>
+                <div class="mini-macro-item">
+                  <div class="mini-macro-value" style="font-size: 18px;">23.4</div>
+                  <div class="mini-macro-label">BMI</div>
+                </div>
+              </div>
+
+              <!-- Body Fat Trend -->
+              <div class="mini-chart-card">
+                <div class="mini-chart-title">Body Fat % Trend</div>
+                <div class="mini-line-chart" style="height: 60px;">
+                  <svg viewBox="0 0 280 60" preserveAspectRatio="none" style="width: 100%; height: 100%;">
+                    <polyline points="0,15 40,18 80,22 120,25 160,28 200,32 240,35 280,38" fill="none" stroke="var(--accent-orange)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    <circle cx="280" cy="38" r="3" fill="var(--accent-orange)" />
+                  </svg>
+                </div>
+              </div>
+
+              <!-- History List -->
+              <div class="mini-section">
+                <div class="mini-section-header">Recent Records</div>
+                <div class="mini-session-item">
+                  <div>
+                    <div class="mini-session-name">75.2 kg</div>
+                    <div class="mini-session-date">Aug 12 · 18.5% fat</div>
+                  </div>
+                  <div class="mini-session-meta" style="color: var(--primary);">-0.3</div>
+                </div>
+                <div class="mini-session-item">
+                  <div>
+                    <div class="mini-session-name">75.5 kg</div>
+                    <div class="mini-session-date">Aug 9 · 18.8% fat</div>
+                  </div>
+                  <div class="mini-session-meta" style="color: var(--primary);">-0.5</div>
+                </div>
+                <div class="mini-session-item">
+                  <div>
+                    <div class="mini-session-name">76.0 kg</div>
+                    <div class="mini-session-date">Aug 5 · 19.2% fat</div>
+                  </div>
+                  <div class="mini-session-meta" style="color: var(--danger);">+0.2</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Bottom Nav -->
+            <div class="mini-navbar">
+              <a class="mini-nav-link">
+                <svg class="mini-nav-icon" viewBox="0 0 24 24"><path d="M3 11 L12 3 L21 11 V20 H3 Z M10 20 V15 H14 V20" /></svg>
+                Home
+              </a>
+              <a class="mini-nav-link">
+                <svg class="mini-nav-icon" viewBox="0 0 24 24"><path d="M13 2 L5 13 H11 L9 22 L19 10 H13 Z" /></svg>
+                Train
+              </a>
+              <a class="mini-nav-link">
+                <svg class="mini-nav-icon diet-icon" viewBox="0 0 24 24"><path d="M3 15 C3 12 7 10 12 10 C17 10 21 12 21 15 C21 18 17 20 12 20 C7 20 3 18 3 15 Z" /><path d="M9.2 6.2 C9.2 4.8 10.5 3.9 11.9 3.9 C13.3 3.9 14.6 4.8 14.6 6.2 C14.6 7.7 11.9 10.2 11.9 10.2 C11.9 10.2 9.2 7.7 9.2 6.2 Z" /></svg>
+                Diet
+              </a>
+              <a class="mini-nav-link active">
+                <svg class="mini-nav-icon active-icon ai-icon" viewBox="0 0 24 24"><path d="M12 1.5 L14.4 8.1 L21.3 8.3 L15.7 12.5 L17.6 19.3 L12 15.7 L6.4 19.3 L8.3 12.5 L2.7 8.3 L9.6 8.1 Z" /><circle cx="12" cy="0.2" r="0.6" fill="currentColor"/><circle cx="23.8" cy="12" r="0.6" fill="currentColor"/><circle cx="12" cy="23.8" r="0.6" fill="currentColor"/><circle cx="0.2" cy="12" r="0.6" fill="currentColor"/></svg>
+                AI
+              </a>
+              <a class="mini-nav-link">
+                <svg class="mini-nav-icon" viewBox="0 0 24 24"><path d="M12 11 C14.2 11 16 9.2 16 7 C16 4.8 14.2 3 12 3 C9.8 3 8 4.8 8 7 C8 9.2 9.8 11 12 11 Z M20 21 V19 C20 16.2 16.4 14 12 14 C7.6 14 4 16.2 4 19 V21" /></svg>
+                Profile
+              </a>
+            </div>
+          </div>
+        </div>
+        <div class="phone-label">Body Stats / 体测页</div>
+      </div>
+
+      <!-- Log Measurement Modal -->
+      <div>
+        <div class="phone">
+          <div class="phone-screen">
+            <div class="phone-content">
+              <div class="mini-header">
+                <h2>Body Stats</h2>
+                <button class="lang-btn" style="background: var(--primary); color: #fff; border: none;">+ Log</button>
+              </div>
+
+              <div style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%); border-radius: var(--radius); padding: 20px; margin-bottom: 14px; color: #fff; box-shadow: var(--shadow-brand);">
+                <div style="font-size: 12px; opacity: 0.8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Current Weight</div>
+                <div style="display: flex; align-items: baseline; gap: 6px; margin-top: 4px;">
+                  <span style="font-size: 36px; font-weight: 800; letter-spacing: -0.03em;">75.2</span>
+                  <span style="font-size: 16px; opacity: 0.8; font-weight: 600;">kg</span>
+                </div>
+                <div style="display: flex; gap: 12px; margin-top: 8px; font-size: 12px; opacity: 0.9;">
+                  <span>↓ -1.8 kg / 30 days</span>
+                  <span>Goal: 72 kg</span>
+                </div>
+              </div>
+
+              <!-- Modal Overlay -->
+              <div class="mini-modal-overlay">
+                <div class="mini-modal">
+                  <div class="mini-modal-handle"></div>
+                  <h3>Log Body Measurement</h3>
+
+                  <div class="form-group">
+                    <label style="font-size: 13px;">Date</label>
+                    <input type="date" value="2026-08-12" style="padding: 10px 14px; font-size: 14px;" />
+                  </div>
+                  <div class="form-group">
+                    <label style="font-size: 13px;">Weight (kg) <span style="color: var(--danger);">*</span></label>
+                    <input type="number" step="0.1" value="75.2" style="padding: 10px 14px; font-size: 14px;" />
+                  </div>
+                  <div class="form-group">
+                    <label style="font-size: 13px;">Body Fat (%)</label>
+                    <input type="number" step="0.1" value="18.5" placeholder="Optional" style="padding: 10px 14px; font-size: 14px;" />
+                  </div>
+                  <div class="form-group">
+                    <label style="font-size: 13px;">Muscle Mass (kg)</label>
+                    <input type="number" step="0.1" value="62.1" placeholder="Optional" style="padding: 10px 14px; font-size: 14px;" />
+                  </div>
+                  <div class="form-group">
+                    <label style="font-size: 13px;">Waist (cm)</label>
+                    <input type="number" step="0.1" value="82" placeholder="Optional" style="padding: 10px 14px; font-size: 14px;" />
+                  </div>
+
+                  <button class="btn btn-primary btn-full">Save Measurement</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="mini-navbar">
+              <a class="mini-nav-link">
+                <svg class="mini-nav-icon" viewBox="0 0 24 24"><path d="M3 11 L12 3 L21 11 V20 H3 Z M10 20 V15 H14 V20" /></svg>
+                Home
+              </a>
+              <a class="mini-nav-link">
+                <svg class="mini-nav-icon" viewBox="0 0 24 24"><path d="M13 2 L5 13 H11 L9 22 L19 10 H13 Z" /></svg>
+                Train
+              </a>
+              <a class="mini-nav-link">
+                <svg class="mini-nav-icon diet-icon" viewBox="0 0 24 24"><path d="M3 15 C3 12 7 10 12 10 C17 10 21 12 21 15 C21 18 17 20 12 20 C7 20 3 18 3 15 Z" /><path d="M9.2 6.2 C9.2 4.8 10.5 3.9 11.9 3.9 C13.3 3.9 14.6 4.8 14.6 6.2 C14.6 7.7 11.9 10.2 11.9 10.2 C11.9 10.2 9.2 7.7 9.2 6.2 Z" /></svg>
+                Diet
+              </a>
+              <a class="mini-nav-link active">
+                <svg class="mini-nav-icon active-icon ai-icon" viewBox="0 0 24 24"><path d="M12 1.5 L14.4 8.1 L21.3 8.3 L15.7 12.5 L17.6 19.3 L12 15.7 L6.4 19.3 L8.3 12.5 L2.7 8.3 L9.6 8.1 Z" /><circle cx="12" cy="0.2" r="0.6" fill="currentColor"/><circle cx="23.8" cy="12" r="0.6" fill="currentColor"/><circle cx="12" cy="23.8" r="0.6" fill="currentColor"/><circle cx="0.2" cy="12" r="0.6" fill="currentColor"/></svg>
+                AI
+              </a>
+              <a class="mini-nav-link">
+                <svg class="mini-nav-icon" viewBox="0 0 24 24"><path d="M12 11 C14.2 11 16 9.2 16 7 C16 4.8 14.2 3 12 3 C9.8 3 8 4.8 8 7 C8 9.2 9.8 11 12 11 Z M20 21 V19 C20 16.2 16.4 14 12 14 C7.6 14 4 16.2 4 19 V21" /></svg>
+                Profile
+              </a>
+            </div>
+          </div>
+        </div>
+        <div class="phone-label">Log Modal / 记录体测</div>
+      </div>
+
+      <!-- Dashboard Integration -->
+      <div>
+        <div class="phone">
+          <div class="phone-screen">
+            <div class="phone-content">
+              <div class="mini-header">
+                <div>
+                  <h2>Dashboard</h2>
+                  <div style="font-size: 12px; color: var(--text-muted);">Welcome back, User</div>
+                </div>
+                <button class="lang-btn">EN</button>
+              </div>
+
+              <!-- Weight Card (NEW - embedded in Dashboard) -->
+              <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; box-shadow: var(--shadow-sm); display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+                <div style="flex: 1;">
+                  <div style="font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Weight</div>
+                  <div style="font-size: 26px; font-weight: 800; letter-spacing: -0.03em; margin-top: 2px;">75.2 <span style="font-size: 13px; color: var(--text-muted); font-weight: 600;">kg</span></div>
+                  <div style="display: flex; gap: 8px; align-items: center; margin-top: 4px;">
+                    <span style="font-size: 11px; color: var(--primary); font-weight: 700; background: var(--primary-light); padding: 2px 8px; border-radius: var(--radius-full);">↓ -1.8 kg</span>
+                    <span style="font-size: 11px; color: var(--text-muted);">Goal: 72 kg</span>
+                  </div>
+                </div>
+                <!-- Mini sparkline -->
+                <div style="width: 80px; height: 40px; flex-shrink: 0;">
+                  <svg viewBox="0 0 80 40" preserveAspectRatio="none" style="width: 100%; height: 100%;">
+                    <polyline points="0,30 15,28 30,25 45,22 60,18 80,12" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    <circle cx="80" cy="12" r="3" fill="var(--primary)" />
+                  </svg>
+                </div>
+              </div>
+
+              <!-- Calorie Stat Card -->
+              <div class="mini-stat-card">
+                <div>
+                  <div class="mini-stat-value">1,540 <span style="font-size: 13px; color: var(--text-muted);">kcal</span></div>
+                  <div class="mini-stat-label">Today's Calories</div>
+                </div>
+                <div class="mini-ring">
+                  <svg width="48" height="48">
+                    <circle cx="24" cy="24" r="20" fill="none" stroke="var(--border)" stroke-width="4" />
+                    <circle cx="24" cy="24" r="20" fill="none" stroke="var(--primary)" stroke-width="4" stroke-linecap="round" stroke-dasharray="125.6" stroke-dashoffset="37.7" />
+                  </svg>
+                  <div class="mini-ring-text">70%</div>
+                </div>
+              </div>
+
+              <!-- Session Stat Card -->
+              <div class="mini-stat-card">
+                <div>
+                  <div class="mini-stat-value">12</div>
+                  <div class="mini-stat-label">Training Sessions</div>
+                </div>
+                <div class="mini-ring">
+                  <svg width="48" height="48">
+                    <circle cx="24" cy="24" r="20" fill="none" stroke="var(--border)" stroke-width="4" />
+                    <circle cx="24" cy="24" r="20" fill="none" stroke="var(--accent-purple)" stroke-width="4" stroke-linecap="round" stroke-dasharray="125.6" stroke-dashoffset="62.8" />
+                  </svg>
+                  <div class="mini-ring-text" style="color: var(--accent-purple);">50%</div>
+                </div>
+              </div>
+
+              <!-- Quick Actions -->
+              <div class="mini-section">
+                <div class="mini-section-header">Quick Actions</div>
+                <div class="mini-quick-actions">
+                  <div class="mini-action-card">
+                    <div class="mini-action-icon">🏋️</div>
+                    Start Session
+                  </div>
+                  <div class="mini-action-card">
+                    <div class="mini-action-icon">🍽️</div>
+                    Log Meal
+                  </div>
+                  <div class="mini-action-card">
+                    <div class="mini-action-icon" style="background: var(--info-soft); color: var(--info);">⚖️</div>
+                    Log Weight
+                  </div>
+                  <div class="mini-action-card">
+                    <div class="mini-action-icon">🤖</div>
+                    AI Analysis
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mini-navbar">
+              <a class="mini-nav-link active">
+                <svg class="mini-nav-icon active-icon" viewBox="0 0 24 24"><path d="M3 11 L12 3 L21 11 V20 H3 Z M10 20 V15 H14 V20" /></svg>
+                Home
+              </a>
+              <a class="mini-nav-link">
+                <svg class="mini-nav-icon" viewBox="0 0 24 24"><path d="M13 2 L5 13 H11 L9 22 L19 10 H13 Z" /></svg>
+                Train
+              </a>
+              <a class="mini-nav-link">
+                <svg class="mini-nav-icon diet-icon" viewBox="0 0 24 24"><path d="M3 15 C3 12 7 10 12 10 C17 10 21 12 21 15 C21 18 17 20 12 20 C7 20 3 18 3 15 Z" /><path d="M9.2 6.2 C9.2 4.8 10.5 3.9 11.9 3.9 C13.3 3.9 14.6 4.8 14.6 6.2 C14.6 7.7 11.9 10.2 11.9 10.2 C11.9 10.2 9.2 7.7 9.2 6.2 Z" /></svg>
+                Diet
+              </a>
+              <a class="mini-nav-link">
+                <svg class="mini-nav-icon ai-icon" viewBox="0 0 24 24"><path d="M12 1.5 L14.4 8.1 L21.3 8.3 L15.7 12.5 L17.6 19.3 L12 15.7 L6.4 19.3 L8.3 12.5 L2.7 8.3 L9.6 8.1 Z" /><circle cx="12" cy="0.2" r="0.6" fill="currentColor"/><circle cx="23.8" cy="12" r="0.6" fill="currentColor"/><circle cx="12" cy="23.8" r="0.6" fill="currentColor"/><circle cx="0.2" cy="12" r="0.6" fill="currentColor"/></svg>
+                AI
+              </a>
+              <a class="mini-nav-link">
+                <svg class="mini-nav-icon" viewBox="0 0 24 24"><path d="M12 11 C14.2 11 16 9.2 16 7 C16 4.8 14.2 3 12 3 C9.8 3 8 4.8 8 7 C8 9.2 9.8 11 12 11 Z M20 21 V19 C20 16.2 16.4 14 12 14 C7.6 14 4 16.2 4 19 V21" /></svg>
+                Profile
+              </a>
+            </div>
+          </div>
+        </div>
+        <div class="phone-label">Dashboard 集成 / 首页嵌入</div>
+      </div>
+
+      <!-- Profile / My Page -->
+      <div>
+        <div class="phone">
+          <div class="phone-screen">
+            <div class="phone-content">
+              <!-- Header -->
+              <div class="mini-header">
+                <h2>Profile</h2>
+                <button class="mini-btn-text" style="color: var(--danger);">Logout</button>
+              </div>
+
+              <!-- Hero card (gradient) -->
+              <div style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%); border-radius: var(--radius); padding: 16px; color: #fff; box-shadow: var(--shadow-brand); position: relative; overflow: hidden;">
+                <div style="position:absolute; right:-20px; top:-20px; width:100px; height:100px; background: rgba(255,255,255,0.1); border-radius: 50%;"></div>
+                <div style="position:absolute; right:20px; bottom:-30px; width:80px; height:80px; background: rgba(255,255,255,0.07); border-radius: 50%;"></div>
+                <div style="display:flex; align-items:center; gap:12px; position:relative; z-index:1;">
+                  <div style="width:52px; height:52px; border-radius:50%; background: rgba(255,255,255,0.25); border: 2px solid rgba(255,255,255,0.6); display:flex; align-items:center; justify-content:center; font-size: 20px; font-weight:700;">L</div>
+                  <div style="flex:1; min-width:0;">
+                    <div style="font-size:16px; font-weight:700; line-height:1.2;">Lei Liu</div>
+                    <div style="font-size:11px; opacity:0.85; margin:2px 0 4px;">lei***@mail.com</div>
+                    <div style="display:inline-flex; align-items:center; gap:4px; background: rgba(255,255,255,0.22); padding: 2px 8px; border-radius: 999px; font-size:10.5px; font-weight:600;">🎯 Muscle Gain</div>
+                  </div>
+                  <button class="mini-btn-text" style="background: rgba(255,255,255,0.95); color: var(--primary); padding:5px 10px; border-radius:999px; font-weight:600; font-size:10.5px;">Edit</button>
+                </div>
+              </div>
+
+              <!-- Stats 3-up -->
+              <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:8px; margin-top: 12px;">
+                <div style="background: var(--surface); border:1px solid var(--border); border-radius: 10px; padding:10px 4px; text-align:center;">
+                  <div style="font-size:18px; font-weight:800; color: var(--text);">24</div>
+                  <div style="font-size:9.5px; color: var(--text-muted); margin-top: 2px;">Sessions total</div>
+                </div>
+                <div style="background: var(--surface); border:1px solid var(--border); border-radius: 10px; padding:10px 4px; text-align:center;">
+                  <div style="font-size:18px; font-weight:800; color: var(--text);">158</div>
+                  <div style="font-size:9.5px; color: var(--text-muted); margin-top: 2px;">Diet records</div>
+                </div>
+                <div style="background: var(--surface); border:1px solid var(--border); border-radius: 10px; padding:10px 4px; text-align:center;">
+                  <div style="font-size:13px; font-weight:700; color: var(--text); margin-top:4px;">Jul 20</div>
+                  <div style="font-size:9.5px; color: var(--text-muted); margin-top: 2px;">Member since</div>
+                </div>
+              </div>
+
+              <!-- Info list -->
+              <div style="background: var(--surface); border:1px solid var(--border); border-radius: 12px; margin-top: 12px;">
+                {[
+                  ['Name','Lei Liu'],
+                  ['Email','lei***@mail.com'],
+                  ['Age','28'],
+                  ['Height','178 cm'],
+                  ['Weight','75.2 kg'],
+                  ['Goal','Muscle Gain'],
+                ].map(([k,v], i, arr) => `
+                  <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; font-size:12px; border-bottom: ${i===arr.length-1?'none':'1px solid var(--border-light)'};">
+                    <span style="color:var(--text-secondary);">${k}</span>
+                    <span style="color:var(--text); font-weight:600;">${v}</span>
+                  </div>`).join('')}
+              </div>
+
+              <!-- Save notice -->
+              <div style="background: var(--success-soft); color: var(--success); border: 1px solid #bbf7d0; font-size: 11px; font-weight: 500; padding:7px 10px; border-radius: 8px; margin-top: 12px;">
+                ✓ Profile updated
+              </div>
+            </div>
+
+            <!-- 5-tab Bottom Nav (profile active) -->
+            <div class="mini-navbar">
+              <a class="mini-nav-link">
+                <svg class="mini-nav-icon" viewBox="0 0 24 24"><path d="M3 11 L12 3 L21 11 V20 H3 Z M10 20 V15 H14 V20" /></svg>
+                Home
+              </a>
+              <a class="mini-nav-link">
+                <svg class="mini-nav-icon" viewBox="0 0 24 24"><path d="M13 2 L5 13 H11 L9 22 L19 10 H13 Z" /></svg>
+                Train
+              </a>
+              <a class="mini-nav-link">
+                <svg class="mini-nav-icon diet-icon" viewBox="0 0 24 24"><path d="M3 15 C3 12 7 10 12 10 C17 10 21 12 21 15 C21 18 17 20 12 20 C7 20 3 18 3 15 Z" /><path d="M9.2 6.2 C9.2 4.8 10.5 3.9 11.9 3.9 C13.3 3.9 14.6 4.8 14.6 6.2 C14.6 7.7 11.9 10.2 11.9 10.2 C11.9 10.2 9.2 7.7 9.2 6.2 Z" /></svg>
+                Diet
+              </a>
+              <a class="mini-nav-link">
+                <svg class="mini-nav-icon ai-icon" viewBox="0 0 24 24"><path d="M12 1.5 L14.4 8.1 L21.3 8.3 L15.7 12.5 L17.6 19.3 L12 15.7 L6.4 19.3 L8.3 12.5 L2.7 8.3 L9.6 8.1 Z" /><circle cx="12" cy="0.2" r="0.6" fill="currentColor"/><circle cx="23.8" cy="12" r="0.6" fill="currentColor"/><circle cx="12" cy="23.8" r="0.6" fill="currentColor"/><circle cx="0.2" cy="12" r="0.6" fill="currentColor"/></svg>
+                AI
+              </a>
+              <a class="mini-nav-link active">
+                <svg class="mini-nav-icon active-icon" viewBox="0 0 24 24"><path d="M12 11 C14.2 11 16 9.2 16 7 C16 4.8 14.2 3 12 3 C9.8 3 8 4.8 8 7 C8 9.2 9.8 11 12 11 Z M20 21 V19 C20 16.2 16.4 14 12 14 C7.6 14 4 16.2 4 19 V21" /></svg>
+                Profile
+              </a>
+            </div>
+          </div>
+        </div>
+        <div class="phone-label">Profile / 我的</div>
+      </div>
+
+      <!-- Edit Profile Modal -->
+      <div>
+        <div class="phone">
+          <div class="phone-screen" style="filter: brightness(0.7);">
+            <div class="phone-content">
+              <div class="mini-header"><h2>Profile</h2><button class="mini-btn-text" style="color: var(--danger);">Logout</button></div>
+              <div style="height: 200px; background: linear-gradient(135deg, var(--primary), var(--primary-hover)); border-radius: var(--radius);"></div>
+            </div>
+          </div>
+
+          <!-- Bottom sheet modal -->
+          <div style="position:absolute; left:0; right:0; bottom:0; background: var(--surface); border-top-left-radius: 18px; border-top-right-radius: 18px; padding: 10px 14px 14px; box-shadow: 0 -4px 24px rgba(0,0,0,0.15); z-index: 10;">
+            <div style="position:absolute; top: 6px; left: 50%; transform: translateX(-50%); width: 30px; height:3px; background: var(--border); border-radius: 2px;"></div>
+            <div style="display:flex; justify-content:space-between; align-items:center; padding: 8px 2px 10px;">
+              <div style="font-size:14px; font-weight:700;">Edit Profile</div>
+              <a class="mini-btn-text" style="color: var(--text-muted); font-size: 13px;">✕</a>
+            </div>
+            <div style="display:grid; gap: 8px;">
+              <div class="mini-field">
+                <label>Name</label>
+                <input class="mini-input" value="Lei Liu" />
+              </div>
+              <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                <div class="mini-field">
+                  <label>Age</label>
+                  <input class="mini-input" type="number" value="28" />
+                </div>
+                <div class="mini-field">
+                  <label>Height (cm)</label>
+                  <input class="mini-input" type="number" value="178" />
+                </div>
+              </div>
+              <div class="mini-field">
+                <label>Weight (kg)</label>
+                <input class="mini-input" type="number" value="75.2" />
+              </div>
+              <div class="mini-field">
+                <label>Fitness Goal</label>
+                <select class="mini-input">
+                  <option>General Fitness</option>
+                  <option selected>Muscle Gain</option>
+                  <option>Weight Loss</option>
+                  <option>Endurance</option>
+                </select>
+              </div>
+            </div>
+            <div style="display:flex; gap:8px; justify-content:flex-end; border-top: 1px solid var(--border-light); margin-top: 10px; padding-top: 10px;">
+              <button class="mini-btn-outline" style="padding:6px 14px; font-size:12px; border-radius: 999px;">Cancel</button>
+              <button class="mini-btn-primary" style="padding:6px 18px; font-size:12px; border-radius: 999px;">Save</button>
+            </div>
+          </div>
+        </div>
+        <div class="phone-label">Edit Profile / 编辑资料（Bottom Sheet）</div>
+      </div>
+
+    </div>
+
+    <!-- Component Specs -->
+    <div class="component-grid" style="margin-top: 24px;">
+      <div class="component-card">
+        <h4>体测 Hero 卡片</h4>
+        <div style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%); border-radius: var(--radius); padding: 20px; color: #fff; box-shadow: var(--shadow-brand);">
+          <div style="font-size: 12px; opacity: 0.8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Current Weight</div>
+          <div style="display: flex; align-items: baseline; gap: 6px; margin-top: 4px;">
+            <span style="font-size: 36px; font-weight: 800; letter-spacing: -0.03em;">75.2</span>
+            <span style="font-size: 16px; opacity: 0.8;">kg</span>
+          </div>
+          <div style="display: flex; gap: 12px; margin-top: 8px; font-size: 12px; opacity: 0.9;">
+            <span>↓ -1.8 kg / 30 days</span>
+            <span>Goal: 72 kg</span>
+          </div>
+        </div>
+        <p style="font-size: 12px; color: var(--text-muted); margin-top: 10px;">渐变背景 + 白色文字，突出当前体测数据。显示 30 天变化量与目标值。</p>
+      </div>
+
+      <div class="component-card">
+        <h4>体重趋势图 (带目标线)</h4>
+        <div style="height: 80px; position: relative;">
+          <svg viewBox="0 0 280 80" preserveAspectRatio="none" style="width: 100%; height: 100%;">
+            <line x1="0" y1="20" x2="280" y2="20" stroke="var(--accent-orange)" stroke-width="1.5" stroke-dasharray="4 4" opacity="0.6" />
+            <polygon points="0,55 40,50 80,45 120,40 160,35 200,32 240,28 280,25 280,80 0,80" fill="rgba(16,185,129,0.1)" />
+            <polyline points="0,55 40,50 80,45 120,40 160,35 200,32 240,28 280,25" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          <div style="position: absolute; top: 0; right: 4px; font-size: 9px; color: var(--accent-orange); font-weight: 700;">🎯 Goal</div>
+        </div>
+        <p style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">折线图 + 渐变填充区域 + 橙色虚线目标线，直观展示进度。</p>
+      </div>
+
+      <div class="component-card">
+        <h4>体测记录表单</h4>
+        <div class="form-group">
+          <label style="font-size: 13px;">Weight (kg) <span style="color: var(--danger);">*</span></label>
+          <input type="number" step="0.1" value="75.2" style="padding: 10px 14px; font-size: 14px;" />
+        </div>
+        <div class="form-group">
+          <label style="font-size: 13px;">Body Fat (%)</label>
+          <input type="number" step="0.1" placeholder="Optional" style="padding: 10px 14px; font-size: 14px;" />
+        </div>
+        <p style="font-size: 12px; color: var(--text-muted);">体重为必填项，其余选填。底部弹出模态框录入。</p>
+      </div>
+
+      <div class="component-card">
+        <h4>Dashboard 嵌入卡片</h4>
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; display: flex; align-items: center; justify-content: space-between; gap: 10px; box-shadow: var(--shadow-sm);">
+          <div style="flex: 1;">
+            <div style="font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Weight</div>
+            <div style="font-size: 22px; font-weight: 800; letter-spacing: -0.03em; margin-top: 2px;">75.2 <span style="font-size: 12px; color: var(--text-muted);">kg</span></div>
+            <span style="font-size: 10px; color: var(--primary); font-weight: 700; background: var(--primary-light); padding: 2px 6px; border-radius: var(--radius-full);">↓ -1.8 kg</span>
+          </div>
+          <svg viewBox="0 0 80 40" preserveAspectRatio="none" style="width: 70px; height: 35px;">
+            <polyline points="0,30 15,28 30,25 45,22 60,18 80,12" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" />
+          </svg>
+        </div>
+        <p style="font-size: 12px; color: var(--text-muted); margin-top: 10px;">首页嵌入精简版体重卡片，含迷你 sparkline 趋势图和变化标签。</p>
+      </div>
+    </div>
+
+    <!-- UX Flow -->
+    <div class="component-card" style="margin-top: 20px;">
+      <h4>交互流程: 记录体测</h4>
+      <div style="font-size: 13px; line-height: 2; color: var(--text-secondary);">
+        <div>1. 📱 打开 App → Dashboard 首页</div>
+        <div>2. 👀 顶部体重卡片显示当前数据 + sparkline 趋势</div>
+        <div>3. 👆 点击「Log Weight」快捷操作 或进入体测页</div>
+        <div>4. ⬆️ 底部弹出模态框 (Bottom Sheet)</div>
+        <div>5. ✏️ 输入体重 (必填) + 体脂/肌肉量/腰围 (选填)</div>
+        <div>6. ✅ 点击「Save Measurement」</div>
+        <div>7. 🔄 Hero 卡片更新 + 趋势图同步刷新</div>
+        <div>8. 📊 AI 分析可注入体重趋势数据，提供更精准建议</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. Design Tokens Summary -->
+  <div class="section">
+    <div class="section-title"><span class="num">8</span> 设计规范总结 (Design Tokens)</div>
+    <table class="token-table">
+      <thead>
+        <tr><th>Category</th><th>Token</th><th>Value</th><th>Usage</th></tr>
+      </thead>
+      <tbody>
+        <tr><td rowspan="3">Brand</td><td><code>--primary</code></td><td>#10b981</td><td>Emerald green, main CTA, active states</td></tr>
+        <tr><td><code>--primary-hover</code></td><td>#059669</td><td>Button hover state</td></tr>
+        <tr><td><code>--primary-light</code></td><td>#ecfdf5</td><td>Soft background, icon containers</td></tr>
+        <tr><td rowspan="3">Shadow</td><td><code>--shadow-sm</code></td><td>0 1px 2px rgba(0,0,0,.04)</td><td>Default card shadow</td></tr>
+        <tr><td><code>--shadow-md</code></td><td>0 4px 16px rgba(0,0,0,.08)</td><td>Hover state, elevated cards</td></tr>
+        <tr><td><code>--shadow-brand</code></td><td>0 4px 14px rgba(16,185,129,.3)</td><td>Primary button glow</td></tr>
+        <tr><td rowspan="2">Layout</td><td><code>max-width</code></td><td>480px</td><td>Mobile-first container</td></tr>
+        <tr><td><code>nav-height</code></td><td>68px + safe-area</td><td>Bottom tab bar</td></tr>
+        <tr><td rowspan="3">Animation</td><td><code>slideUp</code></td><td>0.3s cubic-bezier</td><td>Bottom sheet modal enter</td></tr>
+        <tr><td><code>shimmer</code></td><td>1.4s ease-in-out</td><td>Skeleton loading animation</td></tr>
+        <tr><td><code>spin</code></td><td>0.7s linear</td><td>AI loading spinner</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 9. UX Flow -->
+  <div class="section">
+    <div class="section-title"><span class="num">9</span> 交互流程 (UX Flow)</div>
+    <div class="component-grid">
+      <div class="component-card">
+        <h4>用户旅程: 记录训练</h4>
+        <div style="font-size: 13px; line-height: 2; color: var(--text-secondary);">
+          <div>1. 📱 打开 App → Dashboard 首页</div>
+          <div>2. 👆 点击底部 Tab「训练」</div>
+          <div>3. 📋 浏览训练计划列表</div>
+          <div>4. ➕ 点击「+ New」按钮</div>
+          <div>5. ⬆️ 底部弹出模态框 (Bottom Sheet)</div>
+          <div>6. ✏️ 填写时长、强度等数据</div>
+          <div>7. ✅ 点击「Save Session」</div>
+          <div>8. 🔄 页面刷新，新记录显示</div>
+          <div>9. 📊 图表自动更新训练趋势</div>
+        </div>
+      </div>
+      <div class="component-card">
+        <h4>用户旅程: 记录饮食</h4>
+        <div style="font-size: 13px; line-height: 2; color: var(--text-secondary);">
+          <div>1. 📱 打开 App → Dashboard 首页</div>
+          <div>2. 👆 点击底部 Tab「饮食」</div>
+          <div>3. 📅 选择日期 (默认今天)</div>
+          <div>4. 👀 查看当日宏量营养素概览</div>
+          <div>5. ➕ 在餐食组中添加食物</div>
+          <div>6. ⬆️ 底部弹出模态框</div>
+          <div>7. ✏️ 输入食物名称、卡路里、营养素</div>
+          <div>8. ✅ 保存后实时更新宏量数据</div>
+          <div>9. 📈 周趋势图同步更新</div>
+        </div>
+      </div>
+      <div class="component-card">
+        <h4>用户旅程: AI 分析</h4>
+        <div style="font-size: 13px; line-height: 2; color: var(--text-secondary);">
+          <div>1. 📱 打开 App → Dashboard 首页</div>
+          <div>2. 👆 点击底部 Tab「AI」</div>
+          <div>3. 🤖 选择分析类型 (饮食/训练/目标)</div>
+          <div>4. ⏳ 显示 Loading Spinner</div>
+          <div>5. 🧠 DeepSeek AI 处理数据</div>
+          <div>6. 📝 返回 Markdown 格式分析报告</div>
+          <div>7. 📜 查看历史分析记录</div>
+          <div>8. 👆 可点击历史项重新查看</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div style="text-align: center; padding: 40px 0 0; border-top: 1px solid var(--border); margin-top: 40px;">
+    <p style="font-size: 13px; color: var(--text-muted);">
+      IronAI UI/UX Design System · Built with Inter · Emerald Theme<br>
+      Mobile-first · Bottom Tab Nav · PWA Ready · i18n (EN/ZH/ES)
+    </p>
+  </div>
+
+</div>
+
+</body>
+</html>

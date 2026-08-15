@@ -7,7 +7,8 @@
     "dev": "tsx src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "postinstall": "node scripts/postinstall.js"
+    "postinstall": "node scripts/postinstall.js",
+    "db:sync-from-supabase": "tsx scripts/syncSupabaseToLocal.ts"
   },
   "keywords": [],
   "author": "",

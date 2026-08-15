@@ -3,7 +3,40 @@
     "home": "Inicio",
     "train": "Entrenar",
     "diet": "Dieta",
-    "ai": "IA"
+    "ai": "IA Coach",
+    "profile": "Perfil"
+  },
+  "profile": {
+    "title": "Mi Perfil",
+    "welcome": "Información Personal",
+    "settings": "Ajustes",
+    "language": "Idioma",
+    "edit": "Editar Perfil",
+    "logout": "Cerrar Sesión",
+    "logoutConfirm": "¿Estás seguro de que deseas cerrar sesión?",
+    "switchAccount": "Cambiar Cuenta",
+    "switchAccountConfirm": "¿Estás seguro de que deseas cambiar de cuenta? Serás redirigido a la página de inicio de sesión.",
+    "name": "Nombre",
+    "email": "Correo",
+    "age": "Edad",
+    "height": "Estatura (cm)",
+    "weight": "Peso (kg)",
+    "goal": "Objetivo",
+    "goals": {
+      "general": "Fitness General",
+      "weight_loss": "Pérdida de Peso",
+      "muscle_gain": "Ganancia Muscular",
+      "endurance": "Resistencia"
+    },
+    "memberSince": "Miembro desde",
+    "sessionsTotal": "Entrenamientos",
+    "sessionsUnit": "total",
+    "recordsTotal": "Registros Dieta",
+    "recordsUnit": "total",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "saved": "Perfil actualizado",
+    "saveFailed": "Error al actualizar el perfil"
   },
   "auth": {
     "login": {
@@ -184,6 +217,7 @@
     "addFoodFailed": "Error al añadir la comida",
     "confirmDeleteProgram": "¿Eliminar este programa de entrenamiento? Esta acción no se puede deshacer.",
     "confirmDeleteExercise": "¿Eliminar este ejercicio?",
-    "confirmDeleteFood": "¿Eliminar esta entrada de comida?"
+    "confirmDeleteFood": "¿Eliminar esta entrada de comida?",
+    "friend": "Amigo/a"
   }
 }

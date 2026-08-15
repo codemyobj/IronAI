@@ -363,10 +363,46 @@ const todayCalories = dietRes.data.records.reduce(
 - **两种分析模式**：
   - 训练分析 → `POST /ai/training-analysis` → 返回 `analysis` 字段
   - 饮食建议 → `POST /ai/diet-recommendation` → 返回 `recommendation` 字段
+- **多语言回复**：请求时从 `i18n.language` 获取当前语言代码，作为 `{ lang }` 传入请求体，后端据此切换 AI 回复语言
+  ```typescript
+  const { i18n } = useTranslation();
+  const lang = i18n.language?.split('-')[0] || 'en';
+  const res = await apiClient.post(endpoint, { lang });
+  ```
 - **加载状态**：spinner + 文案提示"可能需要 10-30 秒"
 - **结果渲染**：使用 `react-markdown` 渲染 AI 返回的 Markdown 文本
 - **历史记录模态**：`GET /ai/history` 获取历史分析列表，点击可重新查看
 - **错误处理**：502 状态码特殊提示"AI 服务不可用"（指向 DeepSeek API key 配置问题）
+
+### 7. 我的/个人页 [ProfilePage.tsx](file:///d:/学习/全栈/projects/web端/IronAI/client/src/pages/ProfilePage.tsx)
+
+- **Hero 卡片**：品牌色渐变背景，左侧首字母圆形头像 + 右侧姓名/邮箱/目标胶囊 + 编辑按钮
+- **统计三宫格**：`GET /auth/profile/stats` → { totalTrainingSessions, totalDietRecords } + user.created_at 拼接
+- **信息列表**：姓名 / 邮箱 / 年龄 / 身高 / 体重 / 健身目标，使用 info-row key-value 布局
+- **编辑模态**：Bottom Sheet 模式，字段 name/age/height_cm/weight_kg/fitness_goal，保存时调用 `useAuth().updateProfile(data)` → 后端 `PUT /auth/profile` → setUser 联动更新全应用
+- **退出登录**：右上角按钮 → `window.confirm` → `logout()` → navigate('/login')
+- **与路由/导航的联动**：底部 [Navbar.tsx](file:///d:/学习/全栈/projects/web端/IronAI/client/src/components/Navbar.tsx) 新增第 5 个 Tab "我的"（人形轮廓 SVG 图标），路由 `/profile`，CSS 中 < 400px 屏幕自动收紧 5-Tab 字号与图标
+
+**关键数据流**：
+```
+编辑保存 → PUT /auth/profile → res.data.user → setUser(user)
+         → 全局 Consumer 通过 useAuth() 自动刷新 (Dashboard 目标/Diet AI 分析等)
+```
+
+### 底部导航 [Navbar.tsx](file:///d:/学习/全栈/projects/web端/IronAI/client/src/components/Navbar.tsx)
+
+5 个 Tab 的 SVG 全部自绘，设计参照最新视觉稿：
+| 索引 | name | 图形 |
+| --- | --- | --- |
+| 0 | home | 三角形屋顶 + 矩形房体 + 门开口 |
+| 1 | train | 对角线闪电 |
+| 2 | diet | 椭圆餐盘(两侧把手) + 盘上方心型食物 |
+| 3 | ai | 5角星主体 + 上下左右4个圆点装饰 |
+| 4 | profile | 圆形头部 + 肩线人形 |
+
+- 未激活：`stroke` 2px, `fill: none`, 色值 `--text-secondary`
+- 激活：`fill: currentColor`, `stroke: none`, 品牌色 `--primary`, 缩放 1.05
+- 5 Tab 在 < 400px 宽度：字号 10px、图标 22px，避免换行
 
 ---
 
@@ -382,9 +418,10 @@ i18n
     resources: {
       en: { translation: en },
       zh: { translation: zh },
+      es: { translation: es },
     },
     fallbackLng: 'en',
-    supportedLngs: ['en', 'zh'],
+    supportedLngs: ['en', 'zh', 'es'],
     interpolation: { escapeValue: false },
     detection: {
       order: ['localStorage', 'navigator'],

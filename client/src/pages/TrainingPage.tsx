@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useTraining } from '../hooks/useTraining';
-import { TrainingSkeleton } from '../components/Skeleton';
+import { useHeader } from '../context/HeaderContext';
 import { ChartCard, TrainingBarChart, MuscleGroupChart } from '../components/Charts';
+import { TrainingSkeleton } from '../components/Skeleton';
 import type { TrainingProgram, Exercise } from '../types';
 
 const DIFFICULTIES = ['beginner', 'intermediate', 'advanced'] as const;
@@ -21,6 +22,7 @@ export default function TrainingPage() {
   } = useTraining();
 
   const { t } = useTranslation();
+  const { setHeader, setPageLoading } = useHeader();
 
   // Modal states
   const [showCreateProgram, setShowCreateProgram] = useState(false);
@@ -173,24 +175,32 @@ export default function TrainingPage() {
     setFormError('');
   }
 
+  useEffect(() => {
+    setHeader({
+      title: t('training.title'),
+    });
+  }, [t, setHeader]);
+
+  useEffect(() => {
+    setPageLoading(loading);
+    return () => setPageLoading(false);
+  }, [loading, setPageLoading]);
+
   if (loading) return <TrainingSkeleton />;
   if (error) return <div className="alert alert-error">{error}</div>;
 
   return (
     <div className="training-page">
-      <div className="page-header">
-        <h1>{t('training.title')}</h1>
-        <div className="page-header-actions">
-          <button className="btn btn-outline" onClick={loadSessions}>
-            {t('training.sessionHistory')}
-          </button>
-          <button className="btn btn-primary" onClick={() => setShowCreateProgram(true)}>
-            {t('training.newProgram')}
-          </button>
-          <button className="btn btn-outline" onClick={() => setShowLogSession(true)}>
-            {t('training.logWorkout')}
-          </button>
-        </div>
+      <div className="page-actions">
+        <button className="btn btn-outline" onClick={loadSessions}>
+          {t('training.sessionHistory')}
+        </button>
+        <button className="btn btn-primary" onClick={() => setShowCreateProgram(true)}>
+          {t('training.newProgram')}
+        </button>
+        <button className="btn btn-outline" onClick={() => setShowLogSession(true)}>
+          {t('training.logWorkout')}
+        </button>
       </div>
 
       {/* Programs Grid */}

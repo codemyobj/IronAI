@@ -3,6 +3,7 @@ import prisma from '../config/prisma'
 import { AuthRequest } from '../middleware/auth'
 import { CreateDietBody } from '../types'
 import { formatDate } from '../utils/format'
+import { invalidateDashboardCache } from './dashboardController'
 
 export const getRecords = async (req: AuthRequest, res: Response) => {
   try {
@@ -69,6 +70,7 @@ export const addRecord = async (req: AuthRequest, res: Response) => {
       },
     })
 
+    invalidateDashboardCache(req.userId!)
     res.status(201).json({
       record: {
         ...record,
@@ -95,6 +97,7 @@ export const deleteRecord = async (req: AuthRequest, res: Response) => {
     }
 
     await prisma.dietRecord.delete({ where: { id: existing.id } })
+    invalidateDashboardCache(req.userId!)
     res.json({ message: 'Record deleted' })
   } catch (err) {
     console.error('Delete record error:', err)

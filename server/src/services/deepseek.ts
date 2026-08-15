@@ -63,6 +63,26 @@ export async function chatCompletion(
 }
 
 // ============================================================
+// Language instruction — appended to system prompt
+// ============================================================
+
+const LANG_INSTRUCTIONS: Record<string, string> = {
+  zh: '你必须使用简体中文来撰写整个分析报告，包括所有标题、描述和建议。',
+  es: 'Debes escribir todo el informe de análisis en español, incluyendo todos los títulos, descripciones y recomendaciones.',
+  en: 'Write the entire analysis report in English.',
+}
+
+/**
+ * Get the language instruction for the given language code.
+ * Falls back to English if the language is not supported.
+ */
+export function getLanguageInstruction(lang?: string): string {
+  if (!lang) return LANG_INSTRUCTIONS.en
+  const code = lang.split('-')[0].toLowerCase()
+  return LANG_INSTRUCTIONS[code] ?? LANG_INSTRUCTIONS.en
+}
+
+// ============================================================
 // Pre-built prompts for the fitness app
 // ============================================================
 

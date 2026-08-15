@@ -438,8 +438,13 @@ export const authMiddleware = (req: AuthRequest, res: Response, next: NextFuncti
 | POST | `/api/auth/register` | — | 注册新账户 |
 | POST | `/api/auth/login` | — | 登录 |
 | GET | `/api/auth/me` | `authMiddleware` | 获取当前用户信息 |
+| PUT | `/api/auth/profile` | `authMiddleware` | 修改资料 (白名单：name / age / height_cm / weight_kg / fitness_goal) |
+| GET | `/api/auth/profile/stats` | `authMiddleware` | 返回 { totalTrainingSessions, totalDietRecords } 聚合计数 |
 
-> 注册与登录是公开路由，`/me` 需要认证。
+> 注册与登录是公开路由，其余需要认证。Profile 更新时：
+> - 白名单校验，禁止修改 email / password
+> - fitness_goal 限定在 general/weight_loss/muscle_gain/endurance
+> - 数值字段校验为正数，空字符串转 NULL
 
 ### 训练路由 — [src/routes/training.ts](file:///d:/学习/全栈/projects/web端/IronAI/server/src/routes/training.ts)
 
@@ -725,9 +730,10 @@ export const trainingAnalysis = async (req, res) => {
   // 2. 查询最近 30 天的训练会话（最多 30 条）
   // 3. 查询所有活跃训练计划（含练习数量）
   // 4. 拼装 Markdown 格式的 userPrompt
-  // 5. 调用 chatCompletion(userPrompt, TRAINING_SYSTEM_PROMPT)
-  // 6. 持久化分析结果到 ai_analyses 表
-  // 7. 返回 { analysis, generatedAt }
+  // 5. 读取 req.body.lang，拼接 systemPrompt + 语言指令
+  // 6. 调用 chatCompletion(userPrompt, systemPrompt)
+  // 7. 持久化分析结果到 ai_analyses 表
+  // 8. 返回 { analysis, generatedAt }
 }
 ```
 
@@ -855,6 +861,34 @@ export const DIET_SYSTEM_PROMPT = `You are a registered dietitian specializing i
 ```
 
 两个提示词都强调：**循证、具体、可执行、安全**，并要求 Markdown 格式输出（前端用 `react-markdown` 渲染）。
+
+#### 多语言指令注入
+
+AI 回复语言跟随用户界面语言设置。前端在请求 AI 分析时传入 `lang` 参数，后端通过 `getLanguageInstruction()` 在 system prompt 末尾追加语言指令：
+
+```typescript
+const LANG_INSTRUCTIONS: Record<string, string> = {
+  zh: '你必须使用简体中文来撰写整个分析报告，包括所有标题、描述和建议。',
+  es: 'Debes escribir todo el informe de análisis en español, incluyendo todos los títulos, descripciones y recomendaciones.',
+  en: 'Write the entire analysis report in English.',
+}
+
+export function getLanguageInstruction(lang?: string): string {
+  if (!lang) return LANG_INSTRUCTIONS.en
+  const code = lang.split('-')[0].toLowerCase()
+  return LANG_INSTRUCTIONS[code] ?? LANG_INSTRUCTIONS.en
+}
+```
+
+Controller 调用时拼接：
+```typescript
+const lang = (req.body as any)?.lang
+const systemPrompt = `${TRAINING_SYSTEM_PROMPT}\n\n${getLanguageInstruction(lang)}`
+const analysis = await chatCompletion(userPrompt, systemPrompt)
+```
+
+- 前端传入 `i18n.language` 的语言代码（如 `zh`、`en`、`es`）
+- 不传 `lang` 或传不支持的语言时，默认用英文回复
 
 ---
 

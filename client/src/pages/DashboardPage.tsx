@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../hooks/useAuth';
-import { DashboardSkeleton } from '../components/Skeleton';
+import { useHeader } from '../context/HeaderContext';
 import { ChartCard, CalorieTrendChart, TrainingBarChart } from '../components/Charts';
 import apiClient from '../api';
 
@@ -25,15 +25,30 @@ interface DailyBreakdown {
   entries: number;
 }
 
-interface TrainingSession {
-  id: number;
-  program_name: string;
-  duration_minutes: number;
-  perceived_effort: number;
-  started_at: string;
+interface DashboardPayload {
+  user: {
+    id: number;
+    name: string;
+    email: string;
+    age?: number | null;
+    height_cm?: number | null;
+    weight_kg?: number | null;
+    fitness_goal?: string | null;
+  } | null;
+  stats: DashboardStats;
+  calorieTrendDaily: DailyBreakdown[];
 }
 
-function ProgressRing({ value, max }: { value: number; max: number }) {
+function ProgressRing({ value, max, loading }: { value: number; max: number; loading?: boolean }) {
+  if (loading) {
+    return (
+      <div className="progress-ring" style={{ opacity: 0.3 }}>
+        <svg width="56" height="56">
+          <circle cx="28" cy="28" r="24" fill="none" strokeWidth="5" className="progress-ring-bg" />
+        </svg>
+      </div>
+    );
+  }
   const pct = Math.min(value / max, 1);
   const r = 24;
   const circumference = 2 * Math.PI * r;
@@ -52,133 +67,176 @@ function ProgressRing({ value, max }: { value: number; max: number }) {
 
 const CALORIE_GOAL = 2200;
 
+function StatSkeleton() {
+  return (
+    <div className="stat-card" aria-hidden="true">
+      <div className="stat-content">
+        <div className="skeleton sk-stat-label" />
+        <div className="skeleton sk-stat-value" />
+      </div>
+      <div className="skeleton sk-ring" />
+    </div>
+  );
+}
+
+function ChartSkeleton({ title }: { title: string }) {
+  return (
+    <div className="chart-card" aria-hidden="true">
+      <h3 className="chart-title">{title}</h3>
+      <div className="skeleton" style={{ height: 180, width: '100%', borderRadius: 12 }} />
+    </div>
+  );
+}
+
 export default function DashboardPage() {
   const { t } = useTranslation();
-  const { user, logout } = useAuth();
+  const { user, setUserFromPayload } = useAuth();
+  const { setHeader, setPageLoading } = useHeader();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [calorieTrend, setCalorieTrend] = useState<{ date: string; value: number }[]>([]);
   const [trainingFreq, setTrainingFreq] = useState<{ label: string; value: number }[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [chartLoading, setChartLoading] = useState(true);
+  const [statsError, setStatsError] = useState('');
+
+  const goalLabels: Record<string, string> = {
+    weight_loss: t('goals.weight_loss'),
+    muscle_gain: t('goals.build_muscle'),
+    endurance: t('goals.endurance'),
+    general: t('goals.general'),
+  };
 
   useEffect(() => {
-    async function fetchDashboard() {
-      try {
-        const today = new Date().toISOString().split('T')[0];
-        const weekAgo = new Date();
-        weekAgo.setDate(weekAgo.getDate() - 7);
-        const weekAgoStr = weekAgo.toISOString().split('T')[0];
+    const userName = user?.name?.trim() || t('common.friend');
+    const goalLabel = goalLabels[user?.fitness_goal ?? 'general'] || goalLabels.general;
+    const subtitleParts = [goalLabel];
+    if (user?.weight_kg) subtitleParts.push(`${user.weight_kg} kg`);
+    if (user?.height_cm) subtitleParts.push(`${user.height_cm} cm`);
+    setHeader({
+      title: t('dashboard.greeting', { name: userName }),
+      subtitle: subtitleParts.join(' • '),
+    });
+  }, [t, user, setHeader]);
 
-        const [programsRes, sessionsRes, dietRes, summaryRes] = await Promise.all([
-          apiClient.get('/training/programs'),
-          apiClient.get('/training/sessions', { params: { limit: 5 } }),
-          apiClient.get('/diet/records', { params: { date: today } }),
-          apiClient.get('/diet/summary', { params: { start: weekAgoStr, end: today } }),
-        ]);
+  useEffect(() => {
+    let cancelled = false;
+    const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-        const todayCalories = dietRes.data.records.reduce(
-          (sum: number, r: any) => sum + Number(r.calories || 0),
-          0
-        );
+    // ===== 聚合接口：1 次请求拿回 Dashboard 需要的所有字段 =====
+    // 原来 5 个并发请求 → 现在 1 个请求，省掉 4 次跨太平洋的 RTT。
+    setStatsLoading(true);
+    setChartLoading(true);
+    apiClient.get('/dashboard')
+      .then((res) => {
+        if (cancelled) return;
+        const data = res.data as DashboardPayload;
 
-        setStats({
-          programCount: programsRes.data.programs.length,
-          sessionCount: sessionsRes.data.sessions.length,
-          todayCalories,
-          recentSessions: sessionsRes.data.sessions,
-        });
+        // 把聚合接口带回的 user 写回 AuthContext：
+        // = 原本首屏要额外花 2-4s 查 /api/auth/me，现在这 1 次请求
+        //   同时完成了 5 项数据 + user 的更新。
+        if (data.user) {
+          // PostgreSQL 里 age/height_cm/weight_kg 可为 null，前端 User 接口
+          // 定义为 number | undefined，null 归一化 undefined。
+          const { age, height_cm, weight_kg, fitness_goal, ...rest } = data.user;
+          const normalized: any = { ...rest };
+          if (age != null)         normalized.age = age;
+          if (height_cm != null)   normalized.height_cm = height_cm;
+          if (weight_kg != null)   normalized.weight_kg = weight_kg;
+          if (fitness_goal != null) normalized.fitness_goal = fitness_goal;
+          setUserFromPayload(normalized);
+        }
 
-        // Calorie trend from daily breakdown
-        const daily: DailyBreakdown[] = summaryRes.data.daily || [];
+        setStats(data.stats);
         setCalorieTrend(
-          daily.map(d => ({
+          (data.calorieTrendDaily || []).map(d => ({
             date: d.recorded_at,
             value: Number(d.daily_calories) || 0,
           }))
         );
 
-        // Training frequency by weekday (from recent sessions)
-        const sessions: TrainingSession[] = sessionsRes.data.sessions || [];
-        const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         const freqMap = new Array(7).fill(0);
-        sessions.forEach(s => {
+        (data.stats.recentSessions || []).forEach((s: any) => {
           const day = new Date(s.started_at).getDay();
           freqMap[day]++;
         });
         setTrainingFreq(weekdays.map((label, i) => ({ label, value: freqMap[i] })));
-      } catch (err: any) {
-        setError(err.response?.data?.error || t('common.loadDashboard'));
-      } finally {
-        setLoading(false);
-      }
-    }
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setStatsError(err.response?.data?.error || t('common.loadDashboard'));
+      })
+      .finally(() => {
+        if (cancelled) return;
+        setStatsLoading(false);
+        setChartLoading(false);
+      });
 
-    fetchDashboard();
-  }, []);
+    return () => { cancelled = true; };
+  }, [t]);
 
-  if (loading) {
-    return <DashboardSkeleton />;
-  }
+  const anyLoading = statsLoading || chartLoading;
 
-  if (error) {
-    return <div className="alert alert-error">{error}</div>;
-  }
-
-  const goalLabels: Record<string, string> = {
-    lose_weight: t('goals.weight_loss'),
-    build_muscle: t('goals.build_muscle'),
-    endurance: t('goals.endurance'),
-    general: t('goals.general'),
-  };
+  useEffect(() => {
+    setPageLoading(anyLoading);
+    return () => setPageLoading(false);
+  }, [anyLoading, setPageLoading]);
 
   return (
     <div className="dashboard-page">
-      <div className="page-header">
-        <div>
-          <h1>{t('dashboard.greeting', { name: user?.name })}</h1>
-          <p className="text-muted">
-            {goalLabels[user?.fitness_goal ?? 'general']}
-            {user?.weight_kg && ` • ${user.weight_kg} kg`}
-            {user?.height_cm && ` • ${user.height_cm} cm`}
-          </p>
-        </div>
-        <button onClick={logout} className="btn btn-ghost btn-sm" title={t('common.logout')}>
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
-        </button>
-      </div>
+      {statsError && <div className="alert alert-error">{statsError}</div>}
 
       <div className="stats-grid">
-        <div className="stat-card">
-          <div className="stat-content">
-            <div className="stat-label">{t('dashboard.todayCalories')}</div>
-            <div className="stat-value">{stats?.todayCalories ?? 0}<span className="stat-value-suffix"> {t('dashboard.calorieGoal', { goal: CALORIE_GOAL })}</span></div>
-          </div>
-          <ProgressRing value={stats?.todayCalories ?? 0} max={CALORIE_GOAL} />
-        </div>
-        <div className="stat-card">
-          <div className="stat-content">
-            <div className="stat-label">{t('dashboard.trainingPrograms')}</div>
-            <div className="stat-value">{stats?.programCount ?? 0}</div>
-          </div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-content">
-            <div className="stat-label">{t('dashboard.recentSessions')}</div>
-            <div className="stat-value">{stats?.sessionCount ?? 0}</div>
-          </div>
-        </div>
+        {statsLoading ? (
+          <>
+            <StatSkeleton />
+            <StatSkeleton />
+            <StatSkeleton />
+          </>
+        ) : (
+          <>
+            <div className="stat-card">
+              <div className="stat-content">
+                <div className="stat-label">{t('dashboard.todayCalories')}</div>
+                <div className="stat-value">{stats?.todayCalories ?? 0}<span className="stat-value-suffix"> {t('dashboard.calorieGoal', { goal: CALORIE_GOAL })}</span></div>
+              </div>
+              <ProgressRing value={stats?.todayCalories ?? 0} max={CALORIE_GOAL} />
+            </div>
+            <div className="stat-card">
+              <div className="stat-content">
+                <div className="stat-label">{t('dashboard.trainingPrograms')}</div>
+                <div className="stat-value">{stats?.programCount ?? 0}</div>
+              </div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-content">
+                <div className="stat-label">{t('dashboard.recentSessions')}</div>
+                <div className="stat-value">{stats?.sessionCount ?? 0}</div>
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
-      {/* Charts */}
-      {calorieTrend.length > 0 && (
-        <ChartCard title={t('dashboard.calorieTrend')}>
-          <CalorieTrendChart data={calorieTrend} />
-        </ChartCard>
-      )}
-      {trainingFreq.some(d => d.value > 0) && (
-        <ChartCard title={t('dashboard.trainingFrequency')}>
-          <TrainingBarChart data={trainingFreq} />
-        </ChartCard>
+      {/* Charts — render independently from stats */}
+      {chartLoading ? (
+        <>
+          <ChartSkeleton title={t('dashboard.calorieTrend')} />
+          <ChartSkeleton title={t('dashboard.trainingFrequency')} />
+        </>
+      ) : (
+        <>
+          {calorieTrend.length > 0 && (
+            <ChartCard title={t('dashboard.calorieTrend')}>
+              <CalorieTrendChart data={calorieTrend} />
+            </ChartCard>
+          )}
+          {trainingFreq.some(d => d.value > 0) && (
+            <ChartCard title={t('dashboard.trainingFrequency')}>
+              <TrainingBarChart data={trainingFreq} />
+            </ChartCard>
+          )}
+        </>
       )}
 
       <div className="dashboard-sections">
@@ -218,7 +276,19 @@ export default function DashboardPage() {
           <div className="section-header">
             <h2>{t('dashboard.recentSessions')}</h2>
           </div>
-          {stats?.recentSessions && stats.recentSessions.length > 0 ? (
+          {statsLoading ? (
+            <div className="sk-session-list" aria-hidden="true">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="sk-session-item">
+                  <div className="sk-session-info">
+                    <div className="skeleton sk-session-name" />
+                    <div className="skeleton sk-session-date" />
+                  </div>
+                  <div className="skeleton sk-session-meta" />
+                </div>
+              ))}
+            </div>
+          ) : stats?.recentSessions && stats.recentSessions.length > 0 ? (
             <div className="session-list">
               {stats.recentSessions.map((s) => (
                 <div key={s.id} className="session-item">
