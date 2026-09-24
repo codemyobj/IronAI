@@ -16,11 +16,30 @@
     <meta name="apple-mobile-web-app-title" content="IronAI" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
-    <!-- 主题色 -->
-    <meta name="theme-color" content="#10b981" />
+    <!-- 主题色 — sky-500，与动态主题切换 JS 保持同步 -->
+    <meta name="theme-color" id="meta-theme-color" content="#0ea5e9" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#020617" media="(prefers-color-scheme: dark)" />
 
     <!-- 描述 -->
     <meta name="description" content="AI-powered fitness coaching: track workouts, log meals, and get personalized recommendations." />
+
+    <!-- 主题防闪烁：在 React 加载前根据 localStorage 或系统偏好设置 data-theme -->
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem('ironai-theme');
+          var root = document.documentElement;
+          if (stored === 'light' || stored === 'dark') {
+            root.setAttribute('data-theme', stored);
+            root.style.colorScheme = stored;
+          } else {
+            // system — 留空让 CSS @media prefers-color-scheme 自动生效
+            var dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            root.style.colorScheme = dark ? 'dark' : 'light';
+          }
+        } catch (e) { /* private mode / no localStorage — 无操作 */ }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
