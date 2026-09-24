@@ -1,14 +1,38 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useTraining } from '../hooks/useTraining';
 import { useHeader } from '../context/HeaderContext';
-import { ChartCard, TrainingBarChart, MuscleGroupChart } from '../components/Charts';
 import { TrainingSkeleton } from '../components/Skeleton';
 import type { TrainingProgram, Exercise } from '../types';
+import apiClient from '../api';
 
 const DIFFICULTIES = ['beginner', 'intermediate', 'advanced'] as const;
+const WEEKLY_GOAL = 6;
+const MUSCLE_COLORS = ['var(--chart-series-1)', 'var(--chart-series-2)', 'var(--chart-series-3)', 'var(--chart-series-4)'];
+
+type AIState = 'idle' | 'loading' | 'result' | 'error';
+
+interface AIAnalysis {
+  id: number;
+  user_id: number;
+  analysis_type: 'training' | 'diet';
+  response_text: string;
+  created_at: string;
+}
+
+interface SessionRecord {
+  id: number;
+  program_id: number | null;
+  program_name: string | null;
+  started_at: string;
+  duration_minutes: number | null;
+  perceived_effort: number | null;
+  notes: string | null;
+}
 
 export default function TrainingPage() {
+  const navigate = useNavigate();
   const {
     programs,
     loading,
@@ -52,8 +76,75 @@ export default function TrainingPage() {
   const [exRest, setExRest] = useState(60);
 
   // Sessions state
-  const [sessions, setSessions] = useState<any[]>([]);
+  const [sessions, setSessions] = useState<SessionRecord[]>([]);
   const [showSessions, setShowSessions] = useState(false);
+
+  // AI state
+  const [aiState, setAiState] = useState<AIState>('idle');
+  const [aiResult, setAiResult] = useState<AIAnalysis | null>(null);
+  const [aiError, setAiError] = useState<string>('');
+
+  // 加载训练记录（用于 duration chart）
+  useEffect(() => {
+    apiClient.get('/training/sessions', { params: { limit: 30 } })
+      .then(res => setSessions(res.data.sessions || []))
+      .catch(() => {});
+  }, []);
+
+  // 本周训练数据
+  const weekData = useMemo(() => {
+    const now = new Date();
+    const weekStart = new Date(now);
+    weekStart.setDate(now.getDate() - 6);
+    weekStart.setHours(0, 0, 0, 0);
+
+    const days = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(weekStart);
+      d.setDate(weekStart.getDate() + i);
+      return d;
+    });
+
+    const dayDurations = days.map(d => {
+      const dayStart = new Date(d);
+      dayStart.setHours(0, 0, 0, 0);
+      const dayEnd = new Date(d);
+      dayEnd.setHours(23, 59, 59, 999);
+      const daySessions = sessions.filter(s => {
+        const sd = new Date(s.started_at);
+        return sd >= dayStart && sd <= dayEnd;
+      });
+      const totalDur = daySessions.reduce((sum, s) => sum + (s.duration_minutes || 0), 0);
+      return { date: d, duration: totalDur, count: daySessions.length };
+    });
+
+    const weekSessions = sessions.filter(s => new Date(s.started_at) >= weekStart);
+    const totalMin = weekSessions.reduce((sum, s) => sum + (s.duration_minutes || 0), 0);
+    const avg = weekSessions.length > 0 ? Math.round(totalMin / weekSessions.length) : 0;
+
+    return { dayDurations, weekCount: weekSessions.length, avg, totalMin };
+  }, [sessions]);
+
+  // 肌群分布
+  const muscleData = useMemo(() => {
+    const groupMap: Record<string, number> = {};
+    sessions.forEach(s => {
+      const prog = programs.find(p => p.id === s.program_id);
+      const g = prog?.target_muscle_group || 'Other';
+      groupMap[g] = (groupMap[g] || 0) + 1;
+    });
+    // 如果没有 session 数据，用 programs 数据
+    if (Object.keys(groupMap).length === 0) {
+      programs.forEach(p => {
+        const g = p.target_muscle_group || 'Other';
+        groupMap[g] = (groupMap[g] || 0) + 1;
+      });
+    }
+    const total = Object.values(groupMap).reduce((a, b) => a + b, 0);
+    return Object.entries(groupMap)
+      .map(([label, value]) => ({ label, value, pct: total > 0 ? Math.round((value / total) * 100) : 0 }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 4);
+  }, [sessions, programs]);
 
   const handleCreateProgram = async () => {
     setFormError('');
@@ -80,9 +171,7 @@ export default function TrainingPage() {
 
   const handleViewProgram = async (id: number) => {
     const program = await fetchProgram(id);
-    if (program) {
-      setProgramDetail(program);
-    }
+    if (program) setProgramDetail(program);
   };
 
   const handleDeleteProgram = async (id: number) => {
@@ -90,9 +179,7 @@ export default function TrainingPage() {
     try {
       await deleteProgram(id);
       if (programDetail?.id === id) setProgramDetail(null);
-    } catch {
-      // error handled by hook
-    }
+    } catch {}
   };
 
   const handleAddExercise = async () => {
@@ -100,13 +187,8 @@ export default function TrainingPage() {
     setSaving(true);
     try {
       await addExercise(programDetail.id, {
-        name: exName,
-        sets: exSets,
-        reps: exReps,
-        weight_kg: exWeight,
-        rest_seconds: exRest,
+        name: exName, sets: exSets, reps: exReps, weight_kg: exWeight, rest_seconds: exRest,
       });
-      // Refresh the program detail to get updated exercises
       const updated = await fetchProgram(programDetail.id);
       if (updated) setProgramDetail(updated);
       setShowAddExercise(false);
@@ -124,9 +206,7 @@ export default function TrainingPage() {
       await deleteExercise(exerciseId);
       const updated = await fetchProgram(programDetail.id);
       if (updated) setProgramDetail(updated);
-    } catch {
-      // error handled by hook
-    }
+    } catch {}
   };
 
   const handleLogSession = async () => {
@@ -141,6 +221,9 @@ export default function TrainingPage() {
       });
       setShowLogSession(false);
       resetSessionForm();
+      // 刷新 sessions
+      const res = await apiClient.get('/training/sessions', { params: { limit: 30 } });
+      setSessions(res.data.sessions || []);
     } catch (err: any) {
       setFormError(err.response?.data?.error || t('common.logSessionFailed'));
     } finally {
@@ -148,37 +231,17 @@ export default function TrainingPage() {
     }
   };
 
-  const loadSessions = async () => {
-    try {
-      const { default: apiClient } = await import('../api');
-      const res = await apiClient.get('/training/sessions', { params: { limit: 20 } });
-      setSessions(res.data.sessions);
-      setShowSessions(true);
-    } catch {
-      // ignore
-    }
-  };
-
   function resetForm() {
-    setProgName('');
-    setProgDesc('');
-    setProgDifficulty('beginner');
-    setProgMuscle('');
-    setFormError('');
+    setProgName(''); setProgDesc(''); setProgDifficulty('beginner'); setProgMuscle(''); setFormError('');
   }
 
   function resetSessionForm() {
-    setSessionProgramId(undefined);
-    setSessionDuration(undefined);
-    setSessionEffort(undefined);
-    setSessionNotes('');
-    setFormError('');
+    setSessionProgramId(undefined); setSessionDuration(undefined);
+    setSessionEffort(undefined); setSessionNotes(''); setFormError('');
   }
 
   useEffect(() => {
-    setHeader({
-      title: t('training.title'),
-    });
+    setHeader({ title: t('training.title') });
   }, [t, setHeader]);
 
   useEffect(() => {
@@ -186,86 +249,265 @@ export default function TrainingPage() {
     return () => setPageLoading(false);
   }, [loading, setPageLoading]);
 
+  const handleAiAnalyze = async () => {
+    setAiError('');
+    setAiResult(null);
+    setAiState('loading');
+
+    // 后端接口：POST /api/ai/training-analysis
+    // 返回：{ analysis, generatedAt }
+    try {
+      const res = await apiClient.post('/ai/training-analysis');
+      const text =
+        res.data?.analysis ||
+        res.data?.response_text ||
+        res.data?.result ||
+        '';
+
+      const normalized: AIAnalysis = {
+        id: res.data?.id ?? 0,
+        user_id: res.data?.user_id ?? 0,
+        analysis_type: 'training',
+        response_text: String(text),
+        created_at: res.data?.generatedAt || new Date().toISOString(),
+      };
+      setAiResult(normalized);
+      setAiState('result');
+    } catch (err: any) {
+      const status: number | undefined = err?.response?.status;
+      const raw: string = err?.response?.data?.error || '';
+
+      // 优先级：1) 后端 toPublic() 精确错误  2) axios message  3) i18n 兜底
+      let message: string = raw || (typeof err?.message === 'string' ? err.message : '') || t('ai.analysisFailed');
+      if (!raw && (status === 502 || status === 503)) message = t('ai.serviceUnavailable');
+
+      const isOffline = (status == null) || String(message).toLowerCase().includes('network error');
+
+      if (isOffline) {
+        // 离线/后端挂了 → 保持原有的 setTimeout 演示效果，避免"点了没反应"
+        await new Promise(r => setTimeout(r, 2000));
+        const fallback: AIAnalysis = {
+          id: 0,
+          user_id: 0,
+          analysis_type: 'training',
+          response_text: `${t('training.aiResult1')}\n${t('training.aiResult2')}\n${t('training.aiResult3')}`,
+          created_at: new Date().toISOString(),
+        };
+        setAiResult(fallback);
+        setAiState('result');
+      } else {
+        setAiError(message);
+        setAiState('error');
+      }
+    }
+  };
+
+  // 标题首字母大写工具函数：push day → Push Day
+  const toTitleCase = (str: string) =>
+    str.replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.slice(1).toLowerCase());
+
+  // 计算每个 program 的进度（基于 sessions）
+  const getProgramProgress = (prog: TrainingProgram) => {
+    const progSessions = sessions.filter(s => s.program_id === prog.id);
+    const lastSession = progSessions[0];
+    const exerciseCount = prog.exercises?.length || 0;
+    // 进度 = 本周完成次数 / 目标次数
+    const weekCount = progSessions.filter(s => {
+      const d = new Date(s.started_at);
+      return d >= new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    }).length;
+    const pct = Math.min(Math.round((weekCount / 3) * 100), 100);
+    return { lastSession, exerciseCount, weekCount, pct };
+  };
+
   if (loading) return <TrainingSkeleton />;
   if (error) return <div className="alert alert-error">{error}</div>;
 
+  const weekdays = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+  const maxDuration = Math.max(...weekData.dayDurations.map(d => d.duration), 60);
+  const todayIdx = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1;
+
   return (
     <div className="training-page">
-      <div className="page-actions">
-        <button className="btn btn-outline" onClick={loadSessions}>
-          {t('training.sessionHistory')}
-        </button>
-        <button className="btn btn-primary" onClick={() => setShowCreateProgram(true)}>
+      {/* Header with weekly progress + New 按钮 */}
+      <div className="training-header-row">
+        <div className="training-header-info">
+          <h2>{t('training.weeklyProgress')}</h2>
+          <div className="training-header-sub">
+            {t('training.weeklyCount', { done: weekData.weekCount, goal: WEEKLY_GOAL })}
+          </div>
+        </div>
+        <button className="chip-btn primary" onClick={() => setShowCreateProgram(true)}>
           {t('training.newProgram')}
-        </button>
-        <button className="btn btn-outline" onClick={() => setShowLogSession(true)}>
-          {t('training.logWorkout')}
         </button>
       </div>
 
-      {/* Programs Grid */}
-      {programs.length === 0 ? (
-        <div className="empty-state">
-          <p>{t('training.noProgramsTitle')}</p>
-          <p className="text-muted">{t('training.noPrograms')}</p>
+      {/* 次要操作放在页面顶部，原型风格 */}
+      <div className="training-actions-secondary">
+        <button className="chip-btn" onClick={() => setShowLogSession(true)}>
+          ⏱ {t('training.logWorkout')}
+        </button>
+        <button className="chip-btn" onClick={() => setShowSessions(true)}>
+          📜 {t('training.sessionHistory')}
+        </button>
+      </div>
+
+      {/* Duration Chart */}
+      <div className="chart-card">
+        <div className="chart-card-head">
+          <div className="chart-title">{t('training.durationTrend')}</div>
+          <div className="chart-sub">{t('training.durationAvg', { avg: weekData.avg })}</div>
         </div>
-      ) : (
-        <div className="programs-grid">
-          {programs.map(prog => (
-            <div key={prog.id} className="program-card">
-              <div className="program-card-header">
-                <h3>{prog.name}</h3>
-                <span className={`badge badge-${prog.difficulty}`}>{t(`training.${prog.difficulty}`)}</span>
-              </div>
-              {prog.description && <p className="text-muted">{prog.description}</p>}
-              {prog.target_muscle_group && (
-                <p className="text-muted">{`${t('training.targetMuscle')}: ${prog.target_muscle_group}`}</p>
-              )}
-              <div className="program-card-actions">
-                <button className="btn btn-outline btn-sm" onClick={() => handleViewProgram(prog.id)}>
-                  {t('training.viewExercises')}
-                </button>
-                <button className="btn btn-outline btn-sm" onClick={() => {
-                  setSessionProgramId(prog.id);
-                  setShowLogSession(true);
-                }}>
-                  {t('training.logSession')}
-                </button>
-                <button className="btn btn-danger btn-sm" onClick={() => handleDeleteProgram(prog.id)}>
-                  {t('common.delete')}
-                </button>
+        <div className="duration-chart">
+          {weekData.dayDurations.map((d, i) => {
+            const h = d.duration > 0 ? Math.max((d.duration / maxDuration) * 100, 8) : 0;
+            return (
+              <div
+                key={i}
+                className={`duration-bar ${i === todayIdx && d.duration > 0 ? 'hl' : ''} ${d.duration === 0 ? 'empty' : ''}`}
+                style={{ height: `${h}%` }}
+                title={`${d.date.toLocaleDateString()} · ${d.duration} min`}
+              />
+            );
+          })}
+        </div>
+        <div className="duration-labels">
+          {weekdays.map((d, i) => <span key={i}>{d}</span>)}
+        </div>
+      </div>
+
+      {/* Program Cards with progress */}
+      <div className="dashboard-section">
+        <div className="section-header">
+          <h2>{t('training.myPrograms')}</h2>
+        </div>
+        {programs.length === 0 ? (
+          <div className="empty-state">
+            <p>{t('training.noProgramsTitle')}</p>
+            <p className="text-muted">{t('training.noPrograms')}</p>
+          </div>
+        ) : (
+          <div className="programs-grid">
+            {programs.map(prog => {
+              const { lastSession, exerciseCount, pct } = getProgramProgress(prog);
+              const isLow = pct < 34;
+              const relTime = lastSession
+                ? (() => {
+                    const diffH = Math.floor((Date.now() - new Date(lastSession.started_at).getTime()) / 3600000);
+                    const diffD = Math.floor(diffH / 24);
+                    return diffD > 0 ? t('training.daysAgo', { count: diffD }) : diffH > 0 ? t('training.hoursAgo', { count: diffH }) : t('training.justNow');
+                  })()
+                : t('training.never');
+              return (
+                <div key={prog.id} className="program-card-prog" onClick={() => handleViewProgram(prog.id)}>
+                  <div className="pc-header">
+                    <h3>{toTitleCase(prog.name)}</h3>
+                    <span className={`badge badge-${prog.difficulty}`}>{t(`training.${prog.difficulty}`)}</span>
+                  </div>
+                  <div className="pc-meta">
+                    {prog.target_muscle_group || t('training.generalMuscle')} · {exerciseCount === 0 ? t('training.noExercisesYet') : `${exerciseCount} ${t('training.exercisesUnit')}`}
+                  </div>
+                  <div className="pc-tags">
+                    <span className="badge badge-primary">{t('training.minPerSession', { min: 45 })}</span>
+                    <span className="badge badge-secondary">{t('training.setsRepsShort', { sets: 3, reps: 10 })}</span>
+                  </div>
+                  <div className="pc-progress">
+                    <div
+                      className={`pc-progress-fill ${isLow ? 'warn' : ''}`}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                  <div className="pc-footer">
+                    <span className="pc-last">{t('training.lastSession')}: {relTime}</span>
+                    <span className={`pc-pct ${isLow ? 'warn' : ''}`}>{pct}% →</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Muscle Group Donut */}
+      {muscleData.length > 0 && (
+        <div className="chart-card">
+          <div className="chart-card-head">
+            <div className="chart-title">{t('training.muscleDistribution')}</div>
+            <div className="chart-sub">{t('training.thisMonth')}</div>
+          </div>
+          <div className="muscle-donut-wrap">
+            <div
+              className="muscle-donut"
+              style={{
+                background: `conic-gradient(${
+                  muscleData.map((m, i) => `${MUSCLE_COLORS[i % MUSCLE_COLORS.length]} 0% ${m.pct}%`).join(', ')
+                })`,
+              }}
+            >
+              <div className="muscle-donut-inner">
+                {muscleData.reduce((a, m) => a + m.value, 0)}{t('training.timesUnit')}
               </div>
             </div>
-          ))}
+            <div className="muscle-legend">
+              {muscleData.map((m, i) => (
+                <div key={i} className="muscle-legend-item">
+                  <span className="muscle-legend-dot" style={{ background: MUSCLE_COLORS[i % MUSCLE_COLORS.length] }} />
+                  {m.label} {m.pct}%
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 
-      {/* Charts */}
-      <div className="charts-grid">
-        {sessions.length > 0 && (
-          <ChartCard title={t('training.durationTrend')}>
-            <TrainingBarChart
-              data={sessions.slice(0, 10).reverse().map((s: any) => ({
-                label: new Date(s.started_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
-                value: s.duration_minutes || 0,
-              }))}
-              color="#8b5cf6"
-            />
-          </ChartCard>
-        )}
-        {programs.length > 0 && (() => {
-          const groupMap: Record<string, number> = {}
-          programs.forEach(p => {
-            const g = p.target_muscle_group || 'Other'
-            groupMap[g] = (groupMap[g] || 0) + 1
-          })
-          const data = Object.entries(groupMap).map(([label, value]) => ({ label, value }))
-          return (
-            <ChartCard title={t('training.muscleGroupDistribution')}>
-              <MuscleGroupChart data={data} />
-            </ChartCard>
-          )
-        })()}
+      {/* AI 训练分析区块 */}
+      <div className="ai-section">
+        <h3>{t('training.aiAnalysisTitle')}</h3>
+        <p className="ai-desc">{t('training.aiAnalysisDesc')}</p>
+
+        <div className={`ai-state ${aiState === 'idle' ? 'active' : ''}`}>
+          <button className="ai-btn" onClick={handleAiAnalyze}>
+            ⚡ {t('training.aiAnalyzeBtn')}
+          </button>
+        </div>
+        <div className={`ai-state ${aiState === 'loading' ? 'active' : ''}`}>
+          <div className="ai-loading">
+            <div className="ai-spinner" />
+            <p>{t('training.aiLoading')}</p>
+            <span className="ai-hint">{t('training.aiLoadingHint')}</span>
+          </div>
+        </div>
+        <div className={`ai-state ${aiState === 'error' ? 'active' : ''}`}>
+          <div className="ai-error">
+            <div className="alert alert-error">{aiError || t('ai.analysisFailed')}</div>
+            <div className="ai-result-actions">
+              <button className="ai-action-primary" onClick={handleAiAnalyze}>{t('training.aiReanalyze')}</button>
+              <button onClick={() => { setAiError(''); setAiState('idle'); }}>{t('training.cancel')}</button>
+            </div>
+          </div>
+        </div>
+        <div className={`ai-state ${aiState === 'result' ? 'active' : ''}`}>
+          <div className="ai-result">
+            <h4>📊 {t('training.aiResultTitle')}</h4>
+            {aiResult ? (
+              <div className="ai-result-lines">
+                {aiResult.response_text.split(/\n+/).filter(Boolean).map((line, idx) => (
+                  <p key={idx}>{line}</p>
+                ))}
+              </div>
+            ) : (
+              <ul>
+                <li>{t('training.aiResult1')}</li>
+                <li>{t('training.aiResult2')}</li>
+                <li>{t('training.aiResult3')}</li>
+              </ul>
+            )}
+            <div className="ai-result-actions">
+              <button className="ai-action-primary">{t('training.aiViewPlan')}</button>
+              <button onClick={handleAiAnalyze}>{t('training.aiReanalyze')}</button>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Program Detail Modal */}
@@ -285,6 +527,19 @@ export default function TrainingPage() {
                 )}
               </div>
 
+              {programDetail.exercises && programDetail.exercises.length > 0 && (
+                <button
+                  className="btn btn-primary btn-full"
+                  style={{ marginBottom: 'var(--space-4)' }}
+                  onClick={() => {
+                    setProgramDetail(null);
+                    navigate(`/training/session/${programDetail.id}`);
+                  }}
+                >
+                  ▶ {t('training.startWorkout')}
+                </button>
+              )}
+
               <h3>{t('training.exercises')}</h3>
               {programDetail.exercises && programDetail.exercises.length > 0 ? (
                 <div className="exercise-list">
@@ -296,34 +551,19 @@ export default function TrainingPage() {
                         {ex.weight_kg && <span>{ex.weight_kg} kg</span>}
                         <span>{t('training.restLabel', { rest: ex.rest_seconds })}</span>
                       </div>
-                      <button
-                        className="btn btn-danger btn-sm"
-                        onClick={() => handleDeleteExercise(ex.id)}
-                      >
-                        ✕
-                      </button>
+                      <button className="btn btn-danger btn-sm" onClick={() => handleDeleteExercise(ex.id)}>✕</button>
                     </div>
                   ))}
                 </div>
               ) : (
                 <p className="text-muted">{t('training.noExercisesAdded')}</p>
               )}
-
-              <button
-                className="btn btn-outline btn-full"
-                onClick={() => setShowAddExercise(!showAddExercise)}
-              >
+              <button className="btn btn-outline btn-full" onClick={() => setShowAddExercise(!showAddExercise)}>
                 {showAddExercise ? t('training.cancel') : t('training.addExercise')}
               </button>
-
               {showAddExercise && (
                 <div className="exercise-form">
-                  <input
-                    type="text"
-                    placeholder={t('training.exerciseName')}
-                    value={exName}
-                    onChange={e => setExName(e.target.value)}
-                  />
+                  <input type="text" placeholder={t('training.exerciseName')} value={exName} onChange={e => setExName(e.target.value)} />
                   <div className="form-row">
                     <div className="form-group">
                       <label>{t('training.sets')}</label>
@@ -362,14 +602,13 @@ export default function TrainingPage() {
             </div>
             <div className="modal-body">
               {formError && <div className="alert alert-error">{formError}</div>}
-
               <div className="form-group">
                 <label>{t('training.programName')} *</label>
                 <input type="text" value={progName} onChange={e => setProgName(e.target.value)} placeholder="e.g. Push Day" />
               </div>
               <div className="form-group">
                 <label>{t('training.description')}</label>
-                <textarea value={progDesc} onChange={e => setProgDesc(e.target.value)} placeholder="Brief description of the program..." rows={3} />
+                <textarea value={progDesc} onChange={e => setProgDesc(e.target.value)} placeholder="Brief description..." rows={3} />
               </div>
               <div className="form-row">
                 <div className="form-group">
@@ -380,7 +619,7 @@ export default function TrainingPage() {
                 </div>
                 <div className="form-group">
                   <label>{t('training.targetMuscle')}</label>
-                  <input type="text" value={progMuscle} onChange={e => setProgMuscle(e.target.value)} placeholder="e.g. Chest, Back, Legs" />
+                  <input type="text" value={progMuscle} onChange={e => setProgMuscle(e.target.value)} placeholder="e.g. Chest, Back" />
                 </div>
               </div>
               <button className="btn btn-primary btn-full" onClick={handleCreateProgram} disabled={saving}>
@@ -401,7 +640,6 @@ export default function TrainingPage() {
             </div>
             <div className="modal-body">
               {formError && <div className="alert alert-error">{formError}</div>}
-
               <div className="form-group">
                 <label>{t('training.programOptional')}</label>
                 <select value={sessionProgramId ?? ''} onChange={e => setSessionProgramId(e.target.value ? Number(e.target.value) : undefined)}>
@@ -421,7 +659,7 @@ export default function TrainingPage() {
               </div>
               <div className="form-group">
                 <label>{t('training.notes')}</label>
-                <textarea value={sessionNotes} onChange={e => setSessionNotes(e.target.value)} placeholder="How did it go? Any PRs?" rows={3} />
+                <textarea value={sessionNotes} onChange={e => setSessionNotes(e.target.value)} placeholder="How did it go?" rows={3} />
               </div>
               <button className="btn btn-primary btn-full" onClick={handleLogSession} disabled={saving}>
                 {saving ? t('training.saving') : t('training.logSession')}
@@ -444,17 +682,16 @@ export default function TrainingPage() {
                 <p className="text-muted">{t('training.noSessions')}</p>
               ) : (
                 <div className="session-list">
-                  {sessions.map((s: any) => (
+                  {sessions.map(s => (
                     <div key={s.id} className="session-item">
                       <div className="session-info">
                         <span className="session-name">{s.program_name || t('common.freestyleWorkout')}</span>
                         <span className="session-date">{new Date(s.started_at).toLocaleDateString()}</span>
                       </div>
                       <div className="session-meta">
-                        {s.duration_minutes && <span>{`${s.duration_minutes} ${t('common.min')}`}</span>}
-                        {s.perceived_effort && <span>{t('common.effort', { value: s.perceived_effort })}</span>}
+                        {s.duration_minutes && <span>{s.duration_minutes} {t('common.min')}</span>}
+                        {s.perceived_effort && <span className="session-effort">{s.perceived_effort}/10</span>}
                       </div>
-                      {s.notes && <p className="text-muted">{s.notes}</p>}
                     </div>
                   ))}
                 </div>

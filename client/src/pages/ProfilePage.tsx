@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import apiClient from '../api';
 import { useAuth } from '../hooks/useAuth';
 import { useHeader } from '../context/HeaderContext';
+import { useTheme, type ThemeMode } from '../context/ThemeContext';
 import type { ProfileStats, UpdateProfileData, FitnessGoal } from '../types';
 
 const GOAL_OPTIONS: FitnessGoal[] = ['general', 'weight_loss', 'muscle_gain', 'endurance'];
@@ -14,12 +15,20 @@ const LANG_OPTIONS = [
   { code: 'es', label: 'Español' },
 ] as const;
 
+// 主题切换选项 — 严格对齐 ui-ux-design v2.1 的 segmented control
+const THEME_OPTIONS: { code: ThemeMode; icon: string }[] = [
+  { code: 'light', icon: '☀' },
+  { code: 'dark', icon: '☾' },
+  { code: 'system', icon: '⌂' },
+] as const;
+
 export default function ProfilePage() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const currentLang = i18n.language?.split('-')[0] || 'en';
   const { user, updateProfile, logout } = useAuth();
   const { setHeader } = useHeader();
+  const { theme, setTheme } = useTheme();
 
   const [stats, setStats] = useState<ProfileStats>({ totalTrainingSessions: 0, totalDietRecords: 0 });
   const [editing, setEditing] = useState(false);
@@ -170,6 +179,30 @@ export default function ProfilePage() {
                   onClick={() => i18n.changeLanguage(lang.code)}
                 >
                   {lang.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="info-row">
+            <span className="info-key">{t('profile.theme')}</span>
+            <div
+              className="segmented"
+              role="tablist"
+              aria-label={t('profile.theme')}
+            >
+              {THEME_OPTIONS.map((opt) => (
+                <button
+                  key={opt.code}
+                  type="button"
+                  role="tab"
+                  tabIndex={0}
+                  aria-selected={theme === opt.code}
+                  className={`segmented-item ${theme === opt.code ? 'active' : ''}`}
+                  onClick={() => setTheme(opt.code)}
+                  title={t(`profile.theme_${opt.code}`)}
+                >
+                  <span className="seg-icon" aria-hidden="true">{opt.icon}</span>
+                  <span>{t(`profile.theme_${opt.code}`)}</span>
                 </button>
               ))}
             </div>
