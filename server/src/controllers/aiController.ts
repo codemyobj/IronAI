@@ -1,7 +1,7 @@
 import { Response } from 'express'
 import prisma from '../config/prisma'
 import { AuthRequest } from '../middleware/auth'
-import { chatCompletion, TRAINING_SYSTEM_PROMPT, DIET_SYSTEM_PROMPT, getLanguageInstruction } from '../services/deepseek'
+import { chatCompletion, DeepSeekError, TRAINING_SYSTEM_PROMPT, DIET_SYSTEM_PROMPT, getLanguageInstruction } from '../services/deepseek'
 import { formatDate } from '../utils/format'
 
 export const trainingAnalysis = async (req: AuthRequest, res: Response) => {
@@ -111,6 +111,14 @@ Please analyze this training data and provide:
     res.json({ analysis, generatedAt: new Date().toISOString() })
   } catch (err: any) {
     console.error('Training analysis error:', err)
+
+    if (err instanceof DeepSeekError) {
+      res.status(err.code === 'invalid_key' || err.code === 'missing_key' ? 503 : 502).json({
+        error: err.toPublic(),
+        deepseekCode: err.code,
+      })
+      return
+    }
 
     if (err.message?.includes('DeepSeek')) {
       res.status(502).json({ error: 'AI service unavailable: ' + err.message })
@@ -237,6 +245,14 @@ Based on the user's profile, fitness goal, and eating patterns, provide:
     res.json({ recommendation, generatedAt: new Date().toISOString() })
   } catch (err: any) {
     console.error('Diet recommendation error:', err)
+
+    if (err instanceof DeepSeekError) {
+      res.status(err.code === 'invalid_key' || err.code === 'missing_key' ? 503 : 502).json({
+        error: err.toPublic(),
+        deepseekCode: err.code,
+      })
+      return
+    }
 
     if (err.message?.includes('DeepSeek')) {
       res.status(502).json({ error: 'AI service unavailable: ' + err.message })
