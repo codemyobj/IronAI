@@ -31,10 +31,11 @@ model User {
   created_at    DateTime @default(now()) @db.Timestamptz
   updated_at    DateTime @default(now()) @db.Timestamptz
 
-  training_programs TrainingProgram[]
-  training_sessions TrainingSession[]
-  diet_records      DietRecord[]
-  ai_analyses       AIAnalysis[]
+  training_programs  TrainingProgram[]
+  training_sessions  TrainingSession[]
+  diet_records       DietRecord[]
+  ai_analyses        AIAnalysis[]
+  body_measurements  BodyMeasurement[]
 
   @@map("users")
 }
@@ -123,4 +124,20 @@ model AIAnalysis {
 
   @@index([user_id])
   @@map("ai_analyses")
+}
+
+model BodyMeasurement {
+  id           Int       @id @default(autoincrement())
+  user_id      Int
+  weight_kg    Float
+  body_fat_pct Float?
+  muscle_kg    Float?
+  waist_cm     Float?
+  measured_at  DateTime  @default(now()) @db.Date
+  created_at   DateTime  @default(now()) @db.Timestamptz
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id, measured_at])
+  @@map("body_measurements")
 }

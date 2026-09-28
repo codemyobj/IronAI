@@ -21,6 +21,9 @@ const icons = {
 
   // Person: head circle + shoulders
   profile: 'M12 11 C14.2 11 16 9.2 16 7 C16 4.8 14.2 3 12 3 C9.8 3 8 4.8 8 7 C8 9.2 9.8 11 12 11 Z M20 21 V19 C20 16.2 16.4 14 12 14 C7.6 14 4 16.2 4 19 V21',
+
+  // Star: 5-pointed star
+  body: 'M12 2 L14.9 8.6 L22 9.3 L16.5 14 L18.2 21 L12 17.3 L5.8 21 L7.5 14 L2 9.3 L9.1 8.6 Z',
 };
 
 /** Renders a single tab icon SVG. Diet tab renders as multi-path art. */
@@ -64,6 +67,10 @@ export default function Navbar() {
         <NavLink to="/diet" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
           <TabIcon name="diet" />
           <span>{t('nav.diet')}</span>
+        </NavLink>
+        <NavLink to="/body" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
+          <TabIcon name="body" />
+          <span>{t('nav.body')}</span>
         </NavLink>
         <NavLink to="/profile" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
           <TabIcon name="profile" />

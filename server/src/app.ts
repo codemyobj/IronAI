@@ -12,6 +12,7 @@ import trainingRoutes from './routes/training'
 import dietRoutes from './routes/diet'
 import aiRoutes from './routes/ai'
 import dashboardRoutes from './routes/dashboard'
+import bodyRoutes from './routes/body'
 
 dotenv.config()
 
@@ -58,6 +59,7 @@ app.use('/api/dashboard', dashboardRoutes)
 app.use('/api/training', trainingRoutes)
 app.use('/api/diet', dietRoutes)
 app.use('/api/ai', aiRoutes)
+app.use('/api/body', bodyRoutes)
 
 // Health check
 app.get('/api/health', (_req, res) => {

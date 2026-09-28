@@ -11,6 +11,7 @@ import type {
   TrainingSession,
   DietRecord,
   AIAnalysis,
+  BodyMeasurement,
 } from '@prisma/client'
 
 // --- Database row types (derived from Prisma) ---
@@ -22,6 +23,7 @@ export type ExerciseRow = Exercise
 export type TrainingSessionRow = TrainingSession
 export type DietRecordRow = DietRecord
 export type AIAnalysisRow = AIAnalysis
+export type BodyMeasurementRow = BodyMeasurement
 
 // --- API request types ---
 
@@ -73,4 +75,12 @@ export interface CreateDietBody {
   fat_grams?: number
   portion_description?: string
   recorded_at?: string // defaults to today
+}
+
+export interface CreateBodyMeasurementBody {
+  weight_kg: number
+  body_fat_pct?: number
+  muscle_kg?: number
+  waist_cm?: number
+  measured_at?: string // defaults to today
 }

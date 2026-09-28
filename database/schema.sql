@@ -69,3 +69,16 @@ CREATE TABLE ai_analyses (
   response_text TEXT NOT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+CREATE TABLE body_measurements (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  weight_kg NUMERIC(5,1) NOT NULL,
+  body_fat_pct NUMERIC(5,1),
+  muscle_kg NUMERIC(5,1),
+  waist_cm NUMERIC(5,1),
+  measured_at DATE NOT NULL DEFAULT CURRENT_DATE,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_body_measurements_user_date ON body_measurements(user_id, measured_at);

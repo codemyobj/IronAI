@@ -10,6 +10,7 @@ import DashboardPage from './pages/DashboardPage';
 import TrainingPage from './pages/TrainingPage';
 import WorkoutSessionPage from './pages/WorkoutSessionPage';
 import DietPage from './pages/DietPage';
+import BodyPage from './pages/BodyPage';
 import ProfilePage from './pages/ProfilePage';
 
 
@@ -30,6 +31,7 @@ export default function App() {
               <Route path="/training" element={<TrainingPage />} />
               <Route path="/training/session/:programId" element={<WorkoutSessionPage />} />
               <Route path="/diet" element={<DietPage />} />
+              <Route path="/body" element={<BodyPage />} />
               <Route path="/profile" element={<ProfilePage />} />
             </Route>
 

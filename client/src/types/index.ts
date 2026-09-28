@@ -67,3 +67,14 @@ export interface AIAnalysis {
     response_text: string;
     created_at: string;
 }
+
+export interface BodyMeasurement {
+    id: number;
+    user_id: number;
+    weight_kg: number;
+    body_fat_pct: number | null;
+    muscle_kg: number | null;
+    waist_cm: number | null;
+    measured_at: string; // YYYY-MM-DD
+    created_at: string;
+}
