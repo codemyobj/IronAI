@@ -39,7 +39,14 @@
     "save": "保存",
     "cancel": "取消",
     "saved": "保存成功",
-    "saveFailed": "保存失败"
+    "saveFailed": "保存失败",
+    "bodyData": "目标与身体数据",
+    "statTraining": "训练",
+    "statDiet": "饮食",
+    "statWeight": "体重",
+    "statJoin": "加入",
+    "statStreak": "连续",
+    "joinedOn": "加入 {{date}}"
   },
   "auth": {
     "login": {
@@ -152,7 +159,7 @@
     "advanced": "高级",
     "durationTrend": "训练时长",
     "muscleGroupDistribution": "肌群分布",
-    "weeklyProgress": "本周训练进度",
+    "weeklyProgress": "训练",
     "weeklyCount": "本周已完成 {{done}} / {{goal}} 次",
     "durationAvg": "平均 {{avg}} 分钟",
     "myPrograms": "我的计划",

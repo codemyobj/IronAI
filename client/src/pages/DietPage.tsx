@@ -63,12 +63,6 @@ export default function DietPage() {
   const [aiResult, setAiResult] = useState<AIAnalysis | null>(null);
   const [aiError, setAiError] = useState('');
 
-  // Date navigation
-  const changeDate = (offset: number) => {
-    const d = new Date(selectedDate);
-    d.setDate(d.getDate() + offset);
-    setSelectedDate(d.toISOString().split('T')[0]);
-  };
   const todayStr = new Date().toISOString().split('T')[0];
 
   // Today totals from records
@@ -87,13 +81,27 @@ export default function DietPage() {
   // Calorie progress percentage
   const caloriePct = Math.min(100, Math.round((todayTotals.calories / CALORIE_GOAL) * 100));
 
-  // Header config
+  // Header config — 标题+副标题在左，日期选择 pill 在右（对齐设计图）
   useEffect(() => {
     setHeader({
       title: t('diet.title'),
       subtitle: t('diet.intakeProgress', { pct: caloriePct }),
+      actions: (
+        <label className="diet-date-pill diet-date-pill-pick" title={t('diet.today')}>
+          <span aria-hidden="true">📅</span>
+          <span>{formatDateLabel(selectedDate, i18n.language)}</span>
+          <input
+            type="date"
+            value={selectedDate}
+            max={todayStr}
+            onChange={(e) => e.target.value && setSelectedDate(e.target.value)}
+            className="diet-date-input-hidden"
+            aria-label={t('diet.title')}
+          />
+        </label>
+      ),
     });
-  }, [t, setHeader, caloriePct]);
+  }, [t, setHeader, caloriePct, selectedDate, i18n.language, todayStr, setSelectedDate]);
 
   // Page loading
   useEffect(() => {
@@ -276,27 +284,14 @@ export default function DietPage() {
     <div className="diet-page">
       {/* Page actions */}
       <div className="page-actions">
-        <button className="chip-btn primary" onClick={() => setShowAddForm(true)}>
-          + {t('diet.addFood')}
-        </button>
-      </div>
-
-      {/* Date Picker Pill */}
-      <div className="diet-date-row">
-        <button className="diet-date-nav" onClick={() => changeDate(-1)} aria-label="Previous day">
-          ‹
-        </button>
-        <div className="diet-date-pill">
-          📅 {formatDateLabel(selectedDate, i18n.language)}
-        </div>
-        <button className="diet-date-nav" onClick={() => changeDate(1)} disabled={selectedDate >= todayStr} aria-label="Next day">
-          ›
-        </button>
         {selectedDate !== todayStr && (
           <button className="chip-btn ghost" onClick={() => setSelectedDate(todayStr)}>
             {t('diet.today')}
           </button>
         )}
+        <button className="chip-btn primary" onClick={() => setShowAddForm(true)}>
+          {t('diet.addFood')}
+        </button>
       </div>
 
       {error && <div className="alert alert-error">{error}</div>}

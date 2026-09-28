@@ -960,7 +960,7 @@ p {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 18px 20px 14px 0;
+  padding: 14px 16px 10px 16px;
   margin-bottom: 0;
 }
 
@@ -1037,17 +1037,16 @@ p {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 14px 0;
-  border-bottom: 1px solid var(--border-light);
-  background: transparent;
-  border-radius: 0;
-  border-left: none;
-  border-right: none;
-  border-top: none;
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong, #cbd5e1);
+  border-radius: var(--radius);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+  margin-bottom: 10px;
 }
 
 .session-item:last-child {
-  border-bottom: none;
+  margin-bottom: 0;
 }
 
 .session-info {
@@ -1081,6 +1080,31 @@ p {
   border-radius: var(--radius-full);
   font-size: 12px;
   font-weight: 700;
+}
+
+.session-item-clickable {
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+.session-item-clickable:hover {
+  border-color: var(--primary);
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.12);
+  transform: translateY(-1px);
+}
+.session-item-clickable:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.session-go {
+  color: var(--text-muted);
+  font-size: 18px;
+  font-weight: 400;
+  transition: transform 0.15s ease, color 0.15s ease;
+}
+.session-item-clickable:hover .session-go {
+  color: var(--primary);
+  transform: translateX(3px);
 }
 
 /* ============================================================
@@ -2173,6 +2197,41 @@ p {
   white-space: nowrap;
 }
 
+/* 可点击的日期选择 pill（对齐设计图：顶栏右侧日期胶囊） */
+.diet-date-pill-pick {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease-out),
+              color var(--dur-fast) var(--ease-out),
+              background var(--dur-fast) var(--ease-out);
+}
+.diet-date-pill-pick:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--primary-soft);
+}
+.diet-date-input-hidden {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  color: transparent;
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-size: 16px; /* 避免 iOS 聚焦时自动缩放 */
+}
+
+/* 顶栏右侧 actions 容器：保证日期 pill 不被挤压 */
+.app-header-actions {
+  flex-shrink: 0;
+}
+
 .diet-date-nav {
   width: 30px;
   height: 30px;
@@ -2650,6 +2709,10 @@ p {
   :root:not([data-theme="light"]) .program-card-prog:hover {
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
   }
+
+  :root:not([data-theme="light"]) .session-item-clickable:hover {
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+  }
 }
 
 /* --- Skeleton Screen --- */
@@ -3080,68 +3143,91 @@ p {
 }
 
 .profile-hero {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 20px;
-  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-  color: white;
-  border-radius: 20px;
-  margin-bottom: 20px;
-  box-shadow: var(--shadow-brand);
   position: relative;
+  margin-bottom: 24px;
+}
+
+/* 全宽渐变 cover，头像压在底部边缘 */
+.profile-cover {
+  position: relative;
+  height: 92px;
+  margin: 0 -20px 0;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
   overflow: hidden;
 }
 
-.profile-hero::before {
+.profile-cover::before {
   content: '';
   position: absolute;
-  right: -30px;
-  top: -30px;
-  width: 140px;
-  height: 140px;
-  background: rgba(255, 255, 255, 0.08);
+  right: -36px;
+  top: -48px;
+  width: 180px;
+  height: 180px;
   border-radius: 50%;
+  background: rgba(255, 255, 255, 0.10);
 }
 
-.profile-hero::after {
+.profile-cover::after {
   content: '';
   position: absolute;
-  right: 20px;
-  bottom: -40px;
-  width: 100px;
-  height: 100px;
-  background: rgba(255, 255, 255, 0.06);
+  right: 24px;
+  bottom: -56px;
+  width: 120px;
+  height: 120px;
   border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .profile-avatar {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.25);
-  border: 2px solid rgba(255, 255, 255, 0.6);
+  position: absolute;
+  top: 58px;
+  left: 20px;
+  width: 68px;
+  height: 68px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--secondary), var(--primary));
+  border: 3px solid var(--surface);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 26px;
-  font-weight: 700;
+  font-weight: 800;
   color: white;
-  flex-shrink: 0;
-  z-index: 1;
+  box-shadow: var(--shadow-md);
+  z-index: 2;
 }
 
-.profile-hero-info {
-  flex: 1;
-  min-width: 0;
-  z-index: 1;
+.profile-edit-btn {
+  position: absolute;
+  top: 12px;
+  right: 20px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  color: white;
+  font-size: 15px;
+  z-index: 3;
+  backdrop-filter: blur(6px);
+  transition: background var(--dur-fast) var(--ease-out),
+              transform var(--dur-fast) var(--ease-out);
+}
+
+.profile-edit-btn:hover {
+  background: rgba(255, 255, 255, 0.32);
+  transform: scale(1.06);
+  color: white;
 }
 
 .profile-name {
-  font-size: 19px;
-  font-weight: 700;
-  margin: 0 0 3px;
-  color: white;
+  margin: 34px 20px 0;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--text);
   line-height: 1.2;
 }
 
@@ -3166,51 +3252,78 @@ p {
   backdrop-filter: blur(4px);
 }
 
-.profile-edit-btn {
-  background: rgba(255, 255, 255, 0.95);
-  color: var(--primary);
-  border: none;
+.profile-sub {
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
   font-weight: 600;
-  z-index: 1;
-}
-
-.profile-edit-btn:hover {
-  background: white;
-  color: var(--primary-hover);
+  margin: 2px 20px 0;
 }
 
 .profile-stats {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 12px;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .profile-stat-card {
+  position: relative;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 14px 10px;
-  text-align: center;
+  padding: 16px 14px 14px 18px;
+  overflow: hidden;
 }
 
+/* 左侧彩色竖条 */
+.profile-stat-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  border-radius: 0 2px 2px 0;
+}
+.profile-stat-card.accent-teal::before { background: #14b8a6; }
+.profile-stat-card.accent-green::before { background: #22c55e; }
+.profile-stat-card.accent-orange::before { background: #f97316; }
+.profile-stat-card.accent-purple::before { background: #a855f7; }
+
 .stat-num {
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 800;
   color: var(--text);
   line-height: 1.1;
   margin-bottom: 4px;
+  letter-spacing: -0.01em;
 }
 
 .stat-num.date-num {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
+}
+
+.stat-unit {
+  font-size: 14px;
+  font-weight: 700;
+  margin-left: 1px;
+  opacity: 0.85;
 }
 
 .stat-label {
   font-size: 11px;
   color: var(--text-muted);
   line-height: 1.3;
+  font-weight: 600;
+}
+
+/* 副标题行（@handle · 加入时间 · 目标） */
+.profile-sub {
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-top: 2px;
 }
 
 .info-section {
@@ -3219,41 +3332,82 @@ p {
   border-radius: var(--radius-lg);
   padding: 4px 0;
   margin-bottom: 20px;
+  overflow: hidden;
 }
 
 .info-list {
-  padding: 4px 0;
+  padding: 0;
 }
 
-.info-row {
+/* 图标式设置行（对齐设计图 setting-row） */
+.setting-row {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 12px 20px;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 16px;
   border-bottom: 1px solid var(--border-light);
-  font-size: 14px;
+  background: transparent;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: var(--text);
 }
-
-.info-row:last-child {
+.setting-row:last-child {
   border-bottom: none;
 }
-
-.info-key {
-  color: var(--text-secondary);
-  font-weight: 500;
+.setting-row:hover {
+  background: var(--surface-hover);
 }
-
-.info-value {
+.setting-ic {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: var(--radius);
+  background: var(--primary-soft);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+.setting-ic-danger {
+  background: var(--danger-soft, rgba(239, 68, 68, 0.12));
+  color: var(--danger, #ef4444);
+}
+.setting-txt {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.setting-txt strong {
+  font-size: 14px;
+  font-weight: 700;
   color: var(--text);
-  font-weight: 600;
-  text-align: right;
-  max-width: 60%;
-  word-break: break-word;
 }
-
-.info-value.mono {
-  font-size: 13px;
-  font-weight: 500;
+.setting-txt span {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.setting-txt strong.danger-text {
+  color: var(--danger, #ef4444);
+}
+.setting-chev {
+  color: var(--text-muted);
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.setting-row .lang-options,
+.setting-row .segmented {
+  flex-shrink: 0;
 }
 
 /* Nav tweaks when 5 tabs are visible */

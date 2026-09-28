@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../hooks/useAuth';
 import { useHeader } from '../context/HeaderContext';
@@ -12,6 +12,7 @@ interface DashboardStats {
   todayCalories: number;
   recentSessions: Array<{
     id: number;
+    program_id: number | null;
     program_name: string;
     duration_minutes: number;
     perceived_effort: number;
@@ -95,6 +96,7 @@ function ChartSkeleton({ title }: { title: string }) {
 }
 
 export default function DashboardPage() {
+  const navigate = useNavigate();
   const { t } = useTranslation();
   const { user, setUserFromPayload } = useAuth();
   const { setHeader, setPageLoading } = useHeader();
@@ -315,7 +317,13 @@ export default function DashboardPage() {
                     ? t('dashboard.hoursAgo', { count: diffH })
                     : t('dashboard.justNow');
                 return (
-                  <div key={s.id} className="session-item">
+                  <div
+                    key={s.id}
+                    className="session-item session-item-clickable"
+                    onClick={() => navigate(s.program_id ? `/training/session/${s.program_id}` : '/training')}
+                    role="button"
+                    tabIndex={0}
+                  >
                     <div className="session-info">
                       <span className="session-name">{s.program_name || t('common.freestyleWorkout')}</span>
                       <span className="session-date">
@@ -324,6 +332,7 @@ export default function DashboardPage() {
                     </div>
                     <div className="session-meta">
                       {s.perceived_effort ? <span className="session-effort">{s.perceived_effort}/10</span> : null}
+                      <span className="session-go">→</span>
                     </div>
                   </div>
                 );

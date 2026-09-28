@@ -33,13 +33,20 @@
     },
     "memberSince": "Miembro desde",
     "sessionsTotal": "Entrenamientos",
-    "sessionsUnit": "total",
+    "sessionsUnit": "sesiones",
     "recordsTotal": "Registros Dieta",
-    "recordsUnit": "total",
+    "recordsUnit": "registros",
     "save": "Guardar",
     "cancel": "Cancelar",
     "saved": "Perfil actualizado",
-    "saveFailed": "Error al actualizar el perfil"
+    "saveFailed": "Error al actualizar el perfil",
+    "bodyData": "Objetivo y cuerpo",
+    "statTraining": "Entrenos",
+    "statDiet": "Comidas",
+    "statWeight": "Peso",
+    "statJoin": "Inscrito",
+    "statStreak": "Racha",
+    "joinedOn": "Inscrito {{date}}"
   },
   "auth": {
     "login": {
@@ -152,7 +159,7 @@
     "advanced": "Avanzado",
     "durationTrend": "Duración de entrenamiento",
     "muscleGroupDistribution": "Distribución de grupos musculares",
-    "weeklyProgress": "Progreso semanal",
+    "weeklyProgress": "Entrenamiento",
     "weeklyCount": "{{done}} / {{goal}} sesiones esta semana",
     "durationAvg": "promedio {{avg}} min",
     "myPrograms": "Mis programas",

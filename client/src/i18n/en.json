@@ -33,13 +33,20 @@
     },
     "memberSince": "Member Since",
     "sessionsTotal": "Training Sessions",
-    "sessionsUnit": "total",
+    "sessionsUnit": "sessions",
     "recordsTotal": "Diet Records",
-    "recordsUnit": "total",
+    "recordsUnit": "logs",
     "save": "Save",
     "cancel": "Cancel",
     "saved": "Profile updated",
-    "saveFailed": "Failed to update profile"
+    "saveFailed": "Failed to update profile",
+    "bodyData": "Goals & Body",
+    "statTraining": "Training",
+    "statDiet": "Diet",
+    "statWeight": "Weight",
+    "statJoin": "Joined",
+    "statStreak": "Streak",
+    "joinedOn": "Joined {{date}}"
   },
   "auth": {
     "login": {
@@ -152,7 +159,7 @@
     "advanced": "Advanced",
     "durationTrend": "Training Duration",
     "muscleGroupDistribution": "Muscle Group Distribution",
-    "weeklyProgress": "Weekly Progress",
+    "weeklyProgress": "Training",
     "weeklyCount": "{{done}} / {{goal}} sessions this week",
     "durationAvg": "avg {{avg}} min",
     "myPrograms": "My Programs",

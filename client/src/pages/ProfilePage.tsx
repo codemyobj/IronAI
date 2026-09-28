@@ -92,89 +92,103 @@ export default function ProfilePage() {
   const goalLabel = (g?: FitnessGoal) =>
     g ? (t(`profile.goals.${g}`) as string) : '-';
 
+  // 副标题：@昵称 · 加入时间 · 目标
+  const handle = (user?.name || 'user').toLowerCase().replace(/\s+/g, '');
+  const joinDate = user?.created_at
+    ? new Date(user.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short' })
+    : '';
+  // 注册以来的天数（"连续"卡）
+  const streakDays = user?.created_at
+    ? Math.max(0, Math.floor((Date.now() - new Date(user.created_at).getTime()) / 86400000))
+    : 0;
+  const subtitleParts = [`@${handle}`];
+  if (joinDate) subtitleParts.push(t('profile.joinedOn', { date: joinDate }));
+  subtitleParts.push(goalLabel(user?.fitness_goal));
+
   return (
     <div className="profile-page">
-      {/* Header card: avatar + name + goal */}
+      {/* Hero: 全宽渐变 cover + 头像压边 + 编辑按钮，名字/副标题在下方 */}
       <section className="profile-hero">
+        <div className="profile-cover">
+          <button
+            type="button"
+            className="profile-edit-btn"
+            onClick={openEditor}
+            title={t('profile.edit')}
+            aria-label={t('profile.edit')}
+          >
+            ✏️
+          </button>
+        </div>
         <div className="profile-avatar">
           {user?.name?.[0]?.toUpperCase() || 'U'}
         </div>
-        <div className="profile-hero-info">
-          <h2 className="profile-name">{user?.name || '-'}</h2>
-          <div className="profile-email">{user?.email || '-'}</div>
-          <div className="profile-goal-pill">🎯 {goalLabel(user?.fitness_goal)}</div>
-        </div>
-        <button className="btn btn-primary btn-sm profile-edit-btn" onClick={openEditor}>
-          ✏️ {t('profile.edit')}
-        </button>
+        <h2 className="profile-name">{user?.name || '-'}</h2>
+        <div className="profile-sub">{subtitleParts.join(' · ')}</div>
       </section>
 
-      {/* Stats row */}
+      {/* 统计 2×2 网格（对齐设计高保真） */}
       <section className="profile-stats">
-        <div className="profile-stat-card">
-          <div className="stat-num">{stats.totalTrainingSessions}</div>
-          <div className="stat-label">
-            {t('profile.sessionsTotal')} {t('profile.sessionsUnit')}
+        <div className="profile-stat-card accent-teal">
+          <div className="stat-num">
+            {stats.totalTrainingSessions}
+            <span className="stat-unit">{t('profile.sessionsUnit')}</span>
           </div>
+          <div className="stat-label">{t('profile.statTraining')}</div>
         </div>
-        <div className="profile-stat-card">
-          <div className="stat-num">{stats.totalDietRecords}</div>
-          <div className="stat-label">
-            {t('profile.recordsTotal')} {t('profile.recordsUnit')}
+        <div className="profile-stat-card accent-green">
+          <div className="stat-num">
+            {streakDays}
+            <span className="stat-unit">天</span>
           </div>
+          <div className="stat-label">{t('profile.statStreak')}</div>
         </div>
-        {user?.created_at && (
-          <div className="profile-stat-card">
-            <div className="stat-num date-num">
-              {new Date(user.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-            </div>
-            <div className="stat-label">{t('profile.memberSince')}</div>
+        <div className="profile-stat-card accent-orange">
+          <div className="stat-num">
+            {stats.totalDietRecords}
+            <span className="stat-unit">{t('profile.recordsUnit')}</span>
           </div>
-        )}
-      </section>
-
-      {/* Info section */}
-      <section className="info-section">
-        <h3 className="section-header">{t('profile.welcome')}</h3>
-
-        <div className="info-list">
-          <div className="info-row">
-            <span className="info-key">{t('profile.name')}</span>
-            <span className="info-value">{user?.name || '-'}</span>
+          <div className="stat-label">{t('profile.statDiet')}</div>
+        </div>
+        <div className="profile-stat-card accent-purple">
+          <div className="stat-num">
+            {user?.weight_kg ? Number(user.weight_kg).toFixed(1) : '-'}
+            <span className="stat-unit">kg</span>
           </div>
-          <div className="info-row">
-            <span className="info-key">{t('profile.email')}</span>
-            <span className="info-value mono">{user?.email || '-'}</span>
-          </div>
-          <div className="info-row">
-            <span className="info-key">{t('profile.age')}</span>
-            <span className="info-value">{user?.age ? `${user.age}` : '-'}</span>
-          </div>
-          <div className="info-row">
-            <span className="info-key">{t('profile.height')}</span>
-            <span className="info-value">{user?.height_cm ? `${Number(user.height_cm).toFixed(0)} cm` : '-'}</span>
-          </div>
-          <div className="info-row">
-            <span className="info-key">{t('profile.weight')}</span>
-            <span className="info-value">{user?.weight_kg ? `${Number(user.weight_kg).toFixed(1)} kg` : '-'}</span>
-          </div>
-          <div className="info-row">
-            <span className="info-key">{t('profile.goal')}</span>
-            <span className="info-value">{goalLabel(user?.fitness_goal)}</span>
-          </div>
+          <div className="stat-label">{t('profile.statWeight')}</div>
         </div>
       </section>
 
-      {/* Settings section */}
+      {/* 设置列表（图标式 setting-row，对齐设计图） */}
       <section className="info-section">
         <h3 className="section-header">{t('profile.settings')}</h3>
         <div className="info-list">
-          <div className="info-row">
-            <span className="info-key">{t('profile.language')}</span>
+          {/* 目标与身体数据 → 打开编辑弹窗 */}
+          <button type="button" className="setting-row" onClick={openEditor}>
+            <span className="setting-ic" aria-hidden="true">🎯</span>
+            <span className="setting-txt">
+              <strong>{t('profile.bodyData')}</strong>
+              <span>
+                {goalLabel(user?.fitness_goal)}
+                {user?.weight_kg ? ` · ${Number(user.weight_kg).toFixed(0)} kg` : ''}
+                {user?.height_cm ? ` · ${Number(user.height_cm).toFixed(0)} cm` : ''}
+              </span>
+            </span>
+            <span className="setting-chev" aria-hidden="true">›</span>
+          </button>
+
+          {/* 语言 */}
+          <div className="setting-row">
+            <span className="setting-ic" aria-hidden="true">🌐</span>
+            <span className="setting-txt">
+              <strong>{t('profile.language')}</strong>
+              <span>{LANG_OPTIONS.find((l) => l.code === currentLang)?.label || ''}</span>
+            </span>
             <div className="lang-options">
               {LANG_OPTIONS.map((lang) => (
                 <button
                   key={lang.code}
+                  type="button"
                   className={`lang-chip ${currentLang === lang.code ? 'active' : ''}`}
                   onClick={() => i18n.changeLanguage(lang.code)}
                 >
@@ -183,13 +197,15 @@ export default function ProfilePage() {
               ))}
             </div>
           </div>
-          <div className="info-row">
-            <span className="info-key">{t('profile.theme')}</span>
-            <div
-              className="segmented"
-              role="tablist"
-              aria-label={t('profile.theme')}
-            >
+
+          {/* 主题外观 */}
+          <div className="setting-row">
+            <span className="setting-ic" aria-hidden="true">⚙️</span>
+            <span className="setting-txt">
+              <strong>{t('profile.theme')}</strong>
+              <span>{t(`profile.theme_${theme}`)}</span>
+            </span>
+            <div className="segmented" role="tablist" aria-label={t('profile.theme')}>
               {THEME_OPTIONS.map((opt) => (
                 <button
                   key={opt.code}
@@ -202,20 +218,31 @@ export default function ProfilePage() {
                   title={t(`profile.theme_${opt.code}`)}
                 >
                   <span className="seg-icon" aria-hidden="true">{opt.icon}</span>
-                  <span>{t(`profile.theme_${opt.code}`)}</span>
                 </button>
               ))}
             </div>
           </div>
-          <div className="info-row">
-            <span className="info-key">{t('profile.switchAccount')}</span>
-            <button className="btn btn-outline btn-sm" onClick={handleSwitchAccount}>
+
+          {/* 切换账号 */}
+          <div className="setting-row">
+            <span className="setting-ic" aria-hidden="true">🔁</span>
+            <span className="setting-txt">
+              <strong>{t('profile.switchAccount')}</strong>
+              <span>{user?.email || ''}</span>
+            </span>
+            <button type="button" className="btn btn-outline btn-sm" onClick={handleSwitchAccount}>
               {t('profile.switchAccount')}
             </button>
           </div>
-          <div className="info-row">
-            <span className="info-key">{t('profile.logout')}</span>
-            <button className="btn btn-danger btn-sm" onClick={handleLogout}>
+
+          {/* 退出登录 */}
+          <div className="setting-row">
+            <span className="setting-ic setting-ic-danger" aria-hidden="true">🚪</span>
+            <span className="setting-txt">
+              <strong className="danger-text">{t('profile.logout')}</strong>
+              <span>{t('profile.logoutConfirm')}</span>
+            </span>
+            <button type="button" className="btn btn-danger btn-sm" onClick={handleLogout}>
               {t('profile.logout')}
             </button>
           </div>

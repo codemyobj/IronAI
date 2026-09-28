@@ -42,7 +42,6 @@ export default function TrainingPage() {
     deleteProgram,
     addExercise,
     deleteExercise,
-    logSession,
   } = useTraining();
 
   const { t } = useTranslation();
@@ -50,7 +49,6 @@ export default function TrainingPage() {
 
   // Modal states
   const [showCreateProgram, setShowCreateProgram] = useState(false);
-  const [showLogSession, setShowLogSession] = useState(false);
   const [programDetail, setProgramDetail] = useState<TrainingProgram | null>(null);
 
   // Form states
@@ -60,12 +58,6 @@ export default function TrainingPage() {
   const [progMuscle, setProgMuscle] = useState('');
   const [formError, setFormError] = useState('');
   const [saving, setSaving] = useState(false);
-
-  // Log session form
-  const [sessionProgramId, setSessionProgramId] = useState<number | undefined>();
-  const [sessionDuration, setSessionDuration] = useState<number | undefined>();
-  const [sessionEffort, setSessionEffort] = useState<number | undefined>();
-  const [sessionNotes, setSessionNotes] = useState('');
 
   // Exercise form
   const [showAddExercise, setShowAddExercise] = useState(false);
@@ -77,7 +69,6 @@ export default function TrainingPage() {
 
   // Sessions state
   const [sessions, setSessions] = useState<SessionRecord[]>([]);
-  const [showSessions, setShowSessions] = useState(false);
 
   // AI state
   const [aiState, setAiState] = useState<AIState>('idle');
@@ -209,35 +200,8 @@ export default function TrainingPage() {
     } catch {}
   };
 
-  const handleLogSession = async () => {
-    setFormError('');
-    setSaving(true);
-    try {
-      await logSession({
-        program_id: sessionProgramId,
-        duration_minutes: sessionDuration,
-        perceived_effort: sessionEffort,
-        notes: sessionNotes || undefined,
-      });
-      setShowLogSession(false);
-      resetSessionForm();
-      // 刷新 sessions
-      const res = await apiClient.get('/training/sessions', { params: { limit: 30 } });
-      setSessions(res.data.sessions || []);
-    } catch (err: any) {
-      setFormError(err.response?.data?.error || t('common.logSessionFailed'));
-    } finally {
-      setSaving(false);
-    }
-  };
-
   function resetForm() {
     setProgName(''); setProgDesc(''); setProgDifficulty('beginner'); setProgMuscle(''); setFormError('');
-  }
-
-  function resetSessionForm() {
-    setSessionProgramId(undefined); setSessionDuration(undefined);
-    setSessionEffort(undefined); setSessionNotes(''); setFormError('');
   }
 
   useEffect(() => {
@@ -342,16 +306,6 @@ export default function TrainingPage() {
         </button>
       </div>
 
-      {/* 次要操作放在页面顶部，原型风格 */}
-      <div className="training-actions-secondary">
-        <button className="chip-btn" onClick={() => setShowLogSession(true)}>
-          ⏱ {t('training.logWorkout')}
-        </button>
-        <button className="chip-btn" onClick={() => setShowSessions(true)}>
-          📜 {t('training.sessionHistory')}
-        </button>
-      </div>
-
       {/* Duration Chart */}
       <div className="chart-card">
         <div className="chart-card-head">
@@ -378,9 +332,6 @@ export default function TrainingPage() {
 
       {/* Program Cards with progress */}
       <div className="dashboard-section">
-        <div className="section-header">
-          <h2>{t('training.myPrograms')}</h2>
-        </div>
         {programs.length === 0 ? (
           <div className="empty-state">
             <p>{t('training.noProgramsTitle')}</p>
@@ -625,77 +576,6 @@ export default function TrainingPage() {
               <button className="btn btn-primary btn-full" onClick={handleCreateProgram} disabled={saving}>
                 {saving ? t('training.creating') : t('training.createProgram')}
               </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Log Session Modal */}
-      {showLogSession && (
-        <div className="modal-overlay" onClick={() => { setShowLogSession(false); resetSessionForm(); }}>
-          <div className="modal" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>{t('training.logWorkoutTitle')}</h2>
-              <button className="btn-close" onClick={() => { setShowLogSession(false); resetSessionForm(); }}>✕</button>
-            </div>
-            <div className="modal-body">
-              {formError && <div className="alert alert-error">{formError}</div>}
-              <div className="form-group">
-                <label>{t('training.programOptional')}</label>
-                <select value={sessionProgramId ?? ''} onChange={e => setSessionProgramId(e.target.value ? Number(e.target.value) : undefined)}>
-                  <option value="">{t('common.freestyleWorkout')}</option>
-                  {programs.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                </select>
-              </div>
-              <div className="form-row">
-                <div className="form-group">
-                  <label>{t('training.duration')}</label>
-                  <input type="number" value={sessionDuration ?? ''} onChange={e => setSessionDuration(e.target.value ? Number(e.target.value) : undefined)} min={1} placeholder="45" />
-                </div>
-                <div className="form-group">
-                  <label>{t('training.perceivedEffort')}</label>
-                  <input type="number" value={sessionEffort ?? ''} onChange={e => setSessionEffort(e.target.value ? Number(e.target.value) : undefined)} min={1} max={10} placeholder="7" />
-                </div>
-              </div>
-              <div className="form-group">
-                <label>{t('training.notes')}</label>
-                <textarea value={sessionNotes} onChange={e => setSessionNotes(e.target.value)} placeholder="How did it go?" rows={3} />
-              </div>
-              <button className="btn btn-primary btn-full" onClick={handleLogSession} disabled={saving}>
-                {saving ? t('training.saving') : t('training.logSession')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Sessions History Modal */}
-      {showSessions && (
-        <div className="modal-overlay" onClick={() => setShowSessions(false)}>
-          <div className="modal" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>{t('training.sessionHistoryTitle')}</h2>
-              <button className="btn-close" onClick={() => setShowSessions(false)}>✕</button>
-            </div>
-            <div className="modal-body">
-              {sessions.length === 0 ? (
-                <p className="text-muted">{t('training.noSessions')}</p>
-              ) : (
-                <div className="session-list">
-                  {sessions.map(s => (
-                    <div key={s.id} className="session-item">
-                      <div className="session-info">
-                        <span className="session-name">{s.program_name || t('common.freestyleWorkout')}</span>
-                        <span className="session-date">{new Date(s.started_at).toLocaleDateString()}</span>
-                      </div>
-                      <div className="session-meta">
-                        {s.duration_minutes && <span>{s.duration_minutes} {t('common.min')}</span>}
-                        {s.perceived_effort && <span className="session-effort">{s.perceived_effort}/10</span>}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
           </div>
         </div>
